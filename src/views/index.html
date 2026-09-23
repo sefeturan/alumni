@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Alumni Network - Mezunlar Ağı Platformu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #dbeafe;
+      --secondary: #0ea5e9;
+      --dark: #0f172a;
+      --card-bg: #ffffff;
+      --body-bg: #f8fafc;
+      --text: #334155;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--body-bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .nav-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--dark);
+      text-decoration: none;
+    }
+
+    .brand-badge {
+      font-size: 0.75rem;
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      font-weight: 700;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      list-style: none;
+      align-items: center;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--primary);
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #ecfdf5;
+      color: #059669;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #10b981;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #1e3a8a 0%, #0284c7 100%);
+      color: white;
+      padding: 4rem 1.5rem;
+      text-align: center;
+    }
+
+    .hero-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .hero h1 {
+      font-size: 2.75rem;
+      font-weight: 800;
+      margin-bottom: 1rem;
+      line-height: 1.2;
+    }
+
+    .hero p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      margin-bottom: 2rem;
+    }
+
+    .hero-tags {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 2rem;
+    }
+
+    .hero-tag {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      padding: 0.4rem 0.9rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 3rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-icon {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      display: inline-block;
+    }
+
+    .card h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+      color: var(--dark);
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    /* Interactive Directory Section */
+    .section-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--dark);
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .search-box {
+      width: 100%;
+      padding: 0.85rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 1rem;
+      margin-bottom: 1.5rem;
+      outline: none;
+      transition: border-color 0.2s;
+      background: white;
+    }
+
+    .search-box:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .alumni-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+      margin-bottom: 3rem;
+    }
+
+    .alumni-card {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .alumni-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--primary-light);
+      color: var(--primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+
+    .alumni-name {
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    .alumni-dept {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    .alumni-badge {
+      align-self: flex-start;
+      font-size: 0.75rem;
+      background: #f1f5f9;
+      color: var(--text);
+      padding: 0.2rem 0.5rem;
+      border-radius: 6px;
+      font-weight: 600;
+    }
+
+    /* Live API Console Tester */
+    .tester-panel {
+      background: #1e293b;
+      color: #f8fafc;
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .tester-panel h3 {
+      font-size: 1.35rem;
+      margin-bottom: 0.5rem;
+      color: #38bdf8;
+    }
+
+    .tester-panel p {
+      color: #94a3b8;
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .tester-controls {
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+
+    .test-btn {
+      background: #334155;
+      color: #f1f5f9;
+      border: 1px solid #475569;
+      padding: 0.6rem 1.1rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+
+    .test-btn:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .terminal {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 1.25rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.95rem;
+      min-height: 90px;
+      color: #a7f3d0;
+      white-space: pre-wrap;
+    }
+
+    footer {
+      background: white;
+      border-top: 1px solid var(--border);
+      padding: 2rem 1.5rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <header>
+    <div class="nav-container">
+      <a href="/" class="brand">
+        <span>🎓</span>
+        <span>Alumni Network</span>
+        <span class="brand-badge">Temporary UI</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="#features">Özellikler</a></li>
+        <li><a href="#directory">Mezun Rehberi</a></li>
+        <li><a href="#api-tester">API Canlı Test</a></li>
+        <li><span class="status-badge"><span class="status-dot"></span> Backend Aktif</span></li>
+      </ul>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-tags">
+        <span class="hero-tag">🚀 Node.js v18+</span>
+        <span class="hero-tag">⚡ Express.js REST API</span>
+        <span class="hero-tag">🐳 Docker Ready</span>
+        <span class="hero-tag">🔐 JWT Auth</span>
+      </div>
+      <h1>Mezunlar Ağı Platformu</h1>
+      <p>Üniversite ve okul mezunlarını birbirine bağlayan, kariyer fırsatlarını paylaşmayı ve doğrudan iletişimi sağlayan modern platform.</p>
+    </div>
+  </section>
+
+  <!-- Main Container -->
+  <main class="container">
+    
+    <!-- Key Features from README.md -->
+    <div class="section-title" id="features">
+      <span>📌</span> README.md Temel Özellikleri
+    </div>
+    <div class="grid-3">
+      <div class="card">
+        <span class="card-icon">🔐</span>
+        <h3>Kimlik & Yetkilendirme</h3>
+        <p>JWT tabanlı kimlik doğrulama, bcrypt şifreleme ve Öğrenci, Mezun, Yönetici rol izinleri.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">👤</span>
+        <h3>Mezun Rehberi & Profiller</h3>
+        <p>Mezuniyet yılı, departman, güncel şirket ve unvan bilgilerini içeren zengin mezun profilleri.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">💬</span>
+        <h3>İletişim & Mesajlaşma</h3>
+        <p>Mezunlar arası doğrudan mesajlaşma ve topluluk tartışma panoları.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">💼</span>
+        <h3>Kariyer & İş Panosu</h3>
+        <p>İş fırsatları, staj olanakları ve mentorluk programlarının paylaşıldığı ilan panosu.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🗄️</span>
+        <h3>Esnek Veritabanı</h3>
+        <p>PostgreSQL veya MongoDB ile tam uyumlu mimari yapılandırma.</p>
+      </div>
+      <div class="card">
+        <span class="card-icon">🐳</span>
+        <h3>Konteyner Desteği</h3>
+        <p>Dockerfile ve docker-compose ile üretime hazır, izole dağıtım.</p>
+      </div>
+    </div>
+
+    <!-- Interactive Directory Preview -->
+    <div class="section-title" id="directory">
+      <span>👥</span> Mezun Rehberi (Önizleme)
+    </div>
+    <input type="text" id="searchInput" class="search-box" placeholder="İsim, unvan veya şirket arayın (Örn: Berat, Efe, Google, Mimar)...">
+    
+    <div class="alumni-list" id="alumniContainer">
+      <div class="alumni-card" data-name="berat yılmaz" data-role="yazılım mühendisi">
+        <div class="alumni-header">
+          <div class="avatar">BY</div>
+          <div>
+            <div class="alumni-name">Berat Yılmaz</div>
+            <div class="alumni-dept">Bilgisayar Mühendisliği '22</div>
+          </div>
+        </div>
+        <div class="alumni-badge">Senior Full-Stack Dev @ TechCo</div>
+      </div>
+
+      <div class="alumni-card" data-name="efe turan" data-role="sistem mimarı">
+        <div class="alumni-header">
+          <div class="avatar">ET</div>
+          <div>
+            <div class="alumni-name">Efe Turan</div>
+            <div class="alumni-dept">Yazılım Mühendisliği '21</div>
+          </div>
+        </div>
+        <div class="alumni-badge">Cloud Solutions Architect @ GlobalInc</div>
+      </div>
+
+      <div class="alumni-card" data-name="ayşe demir" data-role="veri analisti">
+        <div class="alumni-header">
+          <div class="avatar">AD</div>
+          <div>
+            <div class="alumni-name">Ayşe Demir</div>
+            <div class="alumni-dept">Endüstri Mühendisliği '23</div>
+          </div>
+        </div>
+        <div class="alumni-badge">Data Scientist @ DataLab</div>
+      </div>
+
+      <div class="alumni-card" data-name="caner kaya" data-role="ürün yöneticisi">
+        <div class="alumni-header">
+          <div class="avatar">CK</div>
+          <div>
+            <div class="alumni-name">Caner Kaya</div>
+            <div class="alumni-dept">İşletme '20</div>
+          </div>
+        </div>
+        <div class="alumni-badge">Product Lead @ StartupX</div>
+      </div>
+    </div>
+
+    <!-- Live API Tester Panel -->
+    <div class="tester-panel" id="api-tester">
+      <h3>⚡ Backend REST API Canlı Test İstasyonu</h3>
+      <p>Sunucuda aktif olan GET metotlarını doğrudan test etmek için aşağıdaki butonlara tıklayabilirsiniz:</p>
+      
+      <div class="tester-controls">
+        <button class="test-btn" onclick="testEndpoint('/health')">GET /health</button>
+        <button class="test-btn" onclick="testEndpoint('/hello')">GET /hello</button>
+        <button class="test-btn" onclick="testEndpoint('/hello/Berat')">GET /hello/Berat</button>
+        <button class="test-btn" onclick="testEndpoint('/hello/Efe')">GET /hello/Efe</button>
+        <button class="test-btn" onclick="testEndpoint('/sum/25/75')">GET /sum/25/75</button>
+        <button class="test-btn" onclick="testEndpoint('/sum/100/250')">GET /sum/100/250</button>
+      </div>
+
+      <div class="terminal" id="terminalOutput">Tepkiyi görmek için yukarıdaki API test butonlarından birine tıklayınız...</div>
+    </div>
+
+  </main>
+
+  <footer>
+    <p>🎓 Alumni Network &bull; MIT License &bull; Backend API Running on Node.js & Express</p>
+  </footer>
+
+  <script>
+    // Live Directory Filter
+    const searchInput = document.getElementById('searchInput');
+    const cards = document.querySelectorAll('.alumni-card');
+
+    searchInput.addEventListener('input', (e) => {
+      const q = e.target.value.toLowerCase().trim();
+      cards.forEach(card => {
+        const text = (card.dataset.name + ' ' + card.dataset.role + ' ' + card.innerText).toLowerCase();
+        card.style.display = text.includes(q) ? 'flex' : 'none';
+      });
+    });
+
+    // Live API Tester via Fetch (GET Method)
+    async function testEndpoint(endpoint) {
+      const output = document.getElementById('terminalOutput');
+      output.innerText = `> İstek gönderiliyor: GET ${endpoint} ...`;
+      try {
+        const res = await fetch(endpoint);
+        const text = await res.text();
+        output.innerText = `HTTP ${res.status} ${res.statusText}\nEndpoint: ${endpoint}\nSonuç: ${text}`;
+      } catch (err) {
+        output.innerText = `Hata: ${err.message}`;
+      }
+    }
+  </script>
+</body>
+</html>

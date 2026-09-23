@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -12,9 +13,9 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Root route requested: displays "ok"
+// Root route: serves the temporary interactive landing page for Alumni Network
 app.get('/', (req, res) => {
-  res.send('ok');
+  res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
 
 // Hello route requested: displays "hello world"
