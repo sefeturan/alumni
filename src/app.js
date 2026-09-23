@@ -1,0 +1,42 @@
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
+
+const app = express();
+const PORT = process.env.PORT || 5001;
+
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
+  credentials: true
+}));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// Root route requested: displays "ok"
+app.get('/', (req, res) => {
+  res.send('ok');
+});
+
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok' });
+});
+
+if (require.main === module) {
+  const server = app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+  });
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      const nextPort = Number(PORT) + 1;
+      console.error(`Port ${PORT} is in use, retrying on port ${nextPort}...`);
+      app.listen(nextPort, () => {
+        console.log(`Server is running on http://localhost:${nextPort}`);
+      });
+    } else {
+      console.error(err);
+    }
+  });
+}
+
+module.exports = app;
