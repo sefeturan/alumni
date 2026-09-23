@@ -32,6 +32,10 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
+// Sum route module from separate file
+const sumRoutes = require('./routes/sum');
+app.use('/sum', sumRoutes);
+
 if (require.main === module) {
   const server = app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
