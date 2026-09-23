@@ -17,6 +17,11 @@ app.get('/', (req, res) => {
   res.send('ok');
 });
 
+// Hello route requested: displays "hello world"
+app.get('/hello', (req, res) => {
+  res.send('hello world');
+});
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
