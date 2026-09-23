@@ -37,6 +37,10 @@ app.get('/health', (req, res) => {
 const sumRoutes = require('./routes/sum');
 app.use('/sum', sumRoutes);
 
+// About page route module from separate file
+const aboutRoutes = require('./routes/about');
+app.use('/about', aboutRoutes);
+
 if (require.main === module) {
   const server = app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
