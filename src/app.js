@@ -62,6 +62,14 @@ app.use('/users', userRoutes);
 const apiUserRoutes = require('./routes/apiUser');
 app.use('/api/users', apiUserRoutes);
 
+// Announcement Web / MVC routes (HTML views & form CRUD)
+const announcementRoutes = require('./routes/announcement');
+app.use('/announcements', announcementRoutes);
+
+// Announcement RESTful API routes (JSON responses & API CRUD)
+const apiAnnouncementRoutes = require('./routes/apiAnnouncement');
+app.use('/api/announcements', apiAnnouncementRoutes);
+
 if (require.main === module) {
   const server = app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

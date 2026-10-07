@@ -28,6 +28,14 @@ const swaggerSpec = {
       description: 'Traditional MVC Web endpoints for Users (handled by UserController)'
     },
     {
+      name: 'API Announcements (/api/announcements)',
+      description: 'RESTful JSON API operations for Announcements (handled by ApiAnnouncementController)'
+    },
+    {
+      name: 'Web Announcements (/announcements)',
+      description: 'Traditional MVC Web management interface for Announcements (handled by AnnouncementController)'
+    },
+    {
       name: 'Genel & Sağlık (General)',
       description: 'Genel sistem ve durum kontrol endpointleri'
     }
@@ -475,6 +483,133 @@ const swaggerSpec = {
           }
         }
       }
+    },
+
+    // ==========================================
+    // REST API ENDPOINTS: /api/announcements
+    // ==========================================
+    '/api/announcements': {
+      get: {
+        tags: ['API Announcements (/api/announcements)'],
+        summary: 'Get all announcements',
+        description: 'Returns list of announcements. Supports query filters: category, priority, isActive.',
+        parameters: [
+          { name: 'category', in: 'query', schema: { type: 'string', example: 'event' } },
+          { name: 'priority', in: 'query', schema: { type: 'string', example: 'high' } }
+        ],
+        responses: {
+          200: {
+            description: 'List of announcements',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean', example: true },
+                    count: { type: 'integer', example: 1 },
+                    data: { type: 'array', items: { $ref: '#/components/schemas/Announcement' } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      post: {
+        tags: ['API Announcements (/api/announcements)'],
+        summary: 'Create a new announcement',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': { schema: { $ref: '#/components/schemas/AnnouncementInput' } }
+          }
+        },
+        responses: {
+          201: { description: 'Announcement created successfully' },
+          400: { description: 'Validation error' }
+        }
+      }
+    },
+    '/api/announcements/{id}': {
+      get: {
+        tags: ['API Announcements (/api/announcements)'],
+        summary: 'Get announcement by ID',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: {
+          200: { description: 'Announcement found' },
+          404: { description: 'Not found' }
+        }
+      },
+      put: {
+        tags: ['API Announcements (/api/announcements)'],
+        summary: 'Update announcement by ID',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        requestBody: {
+          required: true,
+          content: { 'application/json': { schema: { $ref: '#/components/schemas/AnnouncementInput' } } }
+        },
+        responses: {
+          200: { description: 'Updated successfully' },
+          404: { description: 'Not found' }
+        }
+      },
+      delete: {
+        tags: ['API Announcements (/api/announcements)'],
+        summary: 'Delete announcement by ID',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: {
+          200: { description: 'Deleted successfully' },
+          404: { description: 'Not found' }
+        }
+      }
+    },
+
+    // ==========================================
+    // WEB / MVC ENDPOINTS: /announcements
+    // ==========================================
+    '/announcements': {
+      get: {
+        tags: ['Web Announcements (/announcements)'],
+        summary: 'Management Interface & Announcement List (HTML View)',
+        responses: { 200: { description: 'HTML management view' } }
+      },
+      post: {
+        tags: ['Web Announcements (/announcements)'],
+        summary: 'Publish announcement via web form',
+        responses: { 302: { description: 'Redirects to /announcements' } }
+      }
+    },
+    '/announcements/{id}': {
+      get: {
+        tags: ['Web Announcements (/announcements)'],
+        summary: 'View announcement detail (HTML View)',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: { 200: { description: 'HTML detail view' }, 404: { description: 'Not found' } }
+      }
+    },
+    '/announcements/{id}/edit': {
+      get: {
+        tags: ['Web Announcements (/announcements)'],
+        summary: 'View announcement edit form (HTML View)',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: { 200: { description: 'HTML edit view' } }
+      }
+    },
+    '/announcements/{id}/update': {
+      post: {
+        tags: ['Web Announcements (/announcements)'],
+        summary: 'Update announcement via web form',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: { 302: { description: 'Redirects to /announcements/{id}' } }
+      }
+    },
+    '/announcements/{id}/delete': {
+      post: {
+        tags: ['Web Announcements (/announcements)'],
+        summary: 'Delete announcement via web action',
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
+        responses: { 302: { description: 'Redirects to /announcements' } }
+      }
     }
   },
   components: {
@@ -540,6 +675,34 @@ const swaggerSpec = {
           success: { type: 'boolean', example: false },
           message: { type: 'string', example: 'An error occurred.' },
           error: { type: 'string' }
+        }
+      },
+      Announcement: {
+        type: 'object',
+        properties: {
+          id: { type: 'string', example: 'f87a8b65-2bc3-4811-9a74-d2e735492211' },
+          title: { type: 'string', example: '2026 Yıllık Mezunlar Buluşması' },
+          content: { type: 'string', example: 'Tüm mezunlarımızı kampüsümüzde gerçekleşecek yıllık buluşmaya bekliyoruz.' },
+          category: { type: 'string', enum: ['general', 'academic', 'career', 'event'], example: 'event' },
+          author: { type: 'string', example: 'Alumni Network Yönetimi' },
+          priority: { type: 'string', enum: ['low', 'medium', 'high', 'urgent'], example: 'high' },
+          tags: { type: 'array', items: { type: 'string' }, example: ['Etkinlik', 'Buluşma'] },
+          isActive: { type: 'boolean', example: true },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' }
+        }
+      },
+      AnnouncementInput: {
+        type: 'object',
+        required: ['title', 'content'],
+        properties: {
+          title: { type: 'string', example: 'Kariyer Fuarı Duyurusu' },
+          content: { type: 'string', example: 'Önde gelen teknoloji şirketlerinin katılacağı kariyer fuarı haftaya açılıyor.' },
+          category: { type: 'string', enum: ['general', 'academic', 'career', 'event'], default: 'general' },
+          author: { type: 'string', example: 'Kariyer Merkezi' },
+          priority: { type: 'string', enum: ['low', 'medium', 'high', 'urgent'], default: 'medium' },
+          tags: { type: 'array', items: { type: 'string' }, example: ['Kariyer', 'Staj'] },
+          isActive: { type: 'boolean', default: true }
         }
       }
     }

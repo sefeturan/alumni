@@ -130,16 +130,21 @@ Below is the complete project directory layout including currently existing file
 alumni-main/
 ├── src/
 │   ├── app.js                 # [Entrypoint] Express setup, middlewares, port listener, route bindings
-│   ├── config/                # [Configuration] Database connections and environment configurations
-│   │   └── swagger.js         # OpenAPI 3.0 / Swagger UI configuration for /api/users and /users
-│   ├── controllers/           # [Controller Layer] Request handlers connecting Routes with Models & Services
-│   │   ├── ApiUserController.js # RESTful JSON API controller for User CRUD operations
-│   │   └── UserController.js    # Traditional MVC web controller for User views, forms, and redirects
+│   ├── config/                # [Configuration] Database connections, environment & Swagger OpenAPI setup
+│   │   └── swagger.js         # OpenAPI 3.0 / Swagger UI configuration for Users & Announcements
+│   ├── controllers/           # [Controller Layer] Request handlers connecting Routes with Models
+│   │   ├── AnnouncementController.js     # Traditional MVC web controller for announcements management view
+│   │   ├── ApiAnnouncementController.js  # RESTful JSON API controller for announcement CRUD operations
+│   │   ├── ApiUserController.js          # RESTful JSON API controller for User CRUD operations
+│   │   └── UserController.js             # Traditional MVC web controller for User views & forms
 │   ├── middlewares/           # [Middlewares] Auth guards, schema validators, error handlers
-│   ├── models/                # [Model Layer] Database models, entity definitions, and schemas
+│   ├── models/                # [Model Layer] In-memory data models providing full CRUD operations
+│   │   ├── Announcement.js    # In-memory Announcement model (news, notifications, events)
 │   │   └── User.js            # In-memory User model providing full CRUD operations
 │   ├── routes/                # [Routing Layer] API & View endpoint definitions
 │   │   ├── about.js           # Route serving the About page view (/about)
+│   │   ├── announcement.js    # Web MVC routes for announcements management (/announcements)
+│   │   ├── apiAnnouncement.js # RESTful API routes mounted at /api/announcements
 │   │   ├── apiUser.js         # RESTful API routes mounted at /api/users
 │   │   ├── sum.js             # Route performing arithmetic summation (/sum/:number1/:number2)
 │   │   └── user.js            # Traditional MVC web routes mounted at /users
@@ -147,6 +152,9 @@ alumni-main/
 │   ├── utils/                 # [Utilities] Helper functions, logging, and common tools
 │   └── views/                 # [View Layer] Front-end presentation templates and HTML files
 │       ├── about.html         # About page UI template for Alumni Network Platform
+│       ├── announcement-detail.html # Dedicated announcement reading view (GET /announcements/:id)
+│       ├── announcement-edit.html   # Announcement edit form view (GET /announcements/:id/edit)
+│       ├── announcements.html # Announcement management interface with publishing form & list
 │       ├── index.html         # Interactive landing page UI for Alumni Network Platform
 │       ├── user-detail.html   # User profile detail view (GET /users/:id)
 │       ├── user-edit.html     # User profile edit form view (GET /users/:id/edit)
@@ -165,21 +173,27 @@ alumni-main/
 
 | Type | Path / Name | Layer | Description |
 | :--- | :--- | :--- | :--- |
-| **File** | [`src/app.js`](file:///Users/sefeturan/Downloads/alumni-main/src/app.js) | **Entrypoint** | Initializes Express, mounts global middlewares (`cors`, `express.json`), Swagger UI (`/api-docs`), core endpoints, and registers route modules. |
-| **Directory** | `src/config/` | **Config** | Manages environment-specific configurations, database clients, and documentation setups. |
-| **File** | [`src/config/swagger.js`](file:///Users/sefeturan/Downloads/alumni-main/src/config/swagger.js) | **Config / Docs** | OpenAPI 3.0 specification defining schemas and endpoints for `/api/users` and `/users`, served via Swagger UI at `/api-docs`. |
-| **Directory** | `src/models/` | **Model** | Holds database schemas and data models (PostgreSQL tables, MongoDB schemas, ORM/ODM representations). |
-| **File** | [`src/models/User.js`](file:///Users/sefeturan/Downloads/alumni-main/src/models/User.js) | **Model** | In-memory User data model with asynchronous CRUD methods (`create`, `findAll`, `findById`, `findByEmail`, `findByIdAndUpdate`, `findByIdAndDelete`). |
-| **Directory** | `src/views/` | **View** | Contains static and dynamic HTML templates served by endpoints. |
-| **File** | [`src/views/index.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/index.html) | **View** | Interactive landing page served at root route (`GET /`). |
-| **File** | [`src/views/about.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/about.html) | **View** | Styled "About Us" page served at `GET /about`. |
-| **File** | [`src/views/users.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/users.html) | **View** | User management view providing a creation form (`POST /users`) and dynamic listing table (`GET /users`). |
-| **File** | [`src/views/user-detail.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/user-detail.html) | **View** | Dedicated single user profile view page displaying full user info and action buttons (`GET /users/:id`). |
+| **File** | [`src/app.js`](file:///Users/sefeturan/Downloads/alumni-main/src/app.js) | **Entrypoint** | Initializes Express, mounts middlewares, Swagger UI, core endpoints, User and Announcement routes. |
+| **Directory** | `src/config/` | **Config** | Manages environment-specific configurations and Swagger documentation setups. |
+| **File** | [`src/config/swagger.js`](file:///Users/sefeturan/Downloads/alumni-main/src/config/swagger.js) | **Config / Docs** | OpenAPI 3.0 specification defining schemas and endpoints for Users and Announcements. |
+| **Directory** | `src/models/` | **Model** | In-memory data models with asynchronous CRUD methods. |
+| **File** | [`src/models/Announcement.js`](file:///Users/sefeturan/Downloads/alumni-main/src/models/Announcement.js) | **Model** | In-memory Announcement model (`create`, `findAll`, `findById`, `findByIdAndUpdate`, `findByIdAndDelete`). |
+| **File** | [`src/models/User.js`](file:///Users/sefeturan/Downloads/alumni-main/src/models/User.js) | **Model** | In-memory User data model with asynchronous CRUD methods. |
+| **Directory** | `src/views/` | **View** | Front-end templates and interfaces for user and announcement management. |
+| **File** | [`src/views/announcements.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/announcements.html) | **View** | Management interface for creating and listing announcements (`GET /announcements`). |
+| **File** | [`src/views/announcement-detail.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/announcement-detail.html) | **View** | Detailed announcement view (`GET /announcements/:id`). |
+| **File** | [`src/views/announcement-edit.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/announcement-edit.html) | **View** | Edit form for updating announcements (`GET /announcements/:id/edit`). |
+| **File** | [`src/views/users.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/users.html) | **View** | User management view with registration form and listing table (`GET /users`). |
+| **File** | [`src/views/user-detail.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/user-detail.html) | **View** | Dedicated single user profile view page (`GET /users/:id`). |
 | **File** | [`src/views/user-edit.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/user-edit.html) | **View** | Pre-filled profile update form view page (`GET /users/:id/edit`). |
-| **Directory** | `src/controllers/`| **Controller** | Handles HTTP requests, calls appropriate services/models, and generates HTTP responses. |
-| **File** | [`src/controllers/ApiUserController.js`](file:///Users/sefeturan/Downloads/alumni-main/src/controllers/ApiUserController.js) | **Controller** | RESTful JSON API controller handling User CRUD operations with standardized JSON responses and HTTP status codes. |
-| **File** | [`src/controllers/UserController.js`](file:///Users/sefeturan/Downloads/alumni-main/src/controllers/UserController.js) | **Controller** | Traditional MVC controller for web views, handling user listing, profile viewing, HTML form submissions, and redirects. |
-| **Directory** | `src/routes/` | **Routing** | Maps incoming HTTP URLs to corresponding controllers or view-rendering logic. |
+| **Directory** | `src/controllers/`| **Controller** | Handles HTTP requests, calls models, and generates responses/views. |
+| **File** | [`src/controllers/AnnouncementController.js`](file:///Users/sefeturan/Downloads/alumni-main/src/controllers/AnnouncementController.js) | **Controller** | Traditional MVC controller for announcement management views and form actions. |
+| **File** | [`src/controllers/ApiAnnouncementController.js`](file:///Users/sefeturan/Downloads/alumni-main/src/controllers/ApiAnnouncementController.js) | **Controller** | RESTful JSON API controller for announcement CRUD endpoints. |
+| **File** | [`src/controllers/ApiUserController.js`](file:///Users/sefeturan/Downloads/alumni-main/src/controllers/ApiUserController.js) | **Controller** | RESTful JSON API controller for User CRUD operations. |
+| **File** | [`src/controllers/UserController.js`](file:///Users/sefeturan/Downloads/alumni-main/src/controllers/UserController.js) | **Controller** | Traditional MVC controller for User views, listings, and form submissions. |
+| **Directory** | `src/routes/` | **Routing** | Maps HTTP URLs to corresponding controllers. |
+| **File** | [`src/routes/announcement.js`](file:///Users/sefeturan/Downloads/alumni-main/src/routes/announcement.js) | **Routing / Web** | Web routes mounted at `/announcements` for announcement views and actions. |
+| **File** | [`src/routes/apiAnnouncement.js`](file:///Users/sefeturan/Downloads/alumni-main/src/routes/apiAnnouncement.js) | **Routing / API** | REST API routes mounted at `/api/announcements`. |
 | **File** | [`src/routes/apiUser.js`](file:///Users/sefeturan/Downloads/alumni-main/src/routes/apiUser.js) | **Routing / API** | Routes HTTP requests to `ApiUserController` (mounted at `/api/users`). |
 | **File** | [`src/routes/user.js`](file:///Users/sefeturan/Downloads/alumni-main/src/routes/user.js) | **Routing / Web** | Routes HTTP requests to `UserController` (mounted at `/users`). |
 | **File** | [`src/routes/about.js`](file:///Users/sefeturan/Downloads/alumni-main/src/routes/about.js) | **Routing / View** | Delivers the `about.html` view upon receiving `GET /about`. |
@@ -308,6 +322,22 @@ Inside `package.json`, the following scripts are typically used:
 | `GET` | `/users/:id` | Web MVC (`UserController`) | Show user profile page (HTML View) | Public |
 | `POST` | `/users/:id/update` | Web MVC (`UserController`) | Update user from web form & redirect | Public |
 | `POST` | `/users/:id/delete` | Web MVC (`UserController`) | Delete user from web & redirect | Public |
+
+### 📢 Announcement Endpoints (Implemented)
+
+| Method | Endpoint | Layer / Controller | Description | Access |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | `/api/announcements` | REST API (`ApiAnnouncementController`) | List all announcements (supports `?category=`, `?priority=`) | Public |
+| `POST` | `/api/announcements` | REST API (`ApiAnnouncementController`) | Create a new announcement (JSON body) | Public |
+| `GET` | `/api/announcements/:id` | REST API (`ApiAnnouncementController`) | Get single announcement by UUID (JSON) | Public |
+| `PUT` | `/api/announcements/:id` | REST API (`ApiAnnouncementController`) | Update announcement by UUID (JSON) | Public |
+| `DELETE` | `/api/announcements/:id` | REST API (`ApiAnnouncementController`) | Delete announcement by UUID | Public |
+| `GET` | `/announcements` | Web MVC (`AnnouncementController`) | Management interface & list view (HTML) | Public |
+| `POST` | `/announcements` | Web MVC (`AnnouncementController`) | Publish announcement via web form & redirect | Public |
+| `GET` | `/announcements/:id` | Web MVC (`AnnouncementController`) | Show announcement detail page (HTML View) | Public |
+| `GET` | `/announcements/:id/edit` | Web MVC (`AnnouncementController`) | Show announcement edit form (HTML View) | Public |
+| `POST` | `/announcements/:id/update`| Web MVC (`AnnouncementController`) | Update announcement via web form & redirect | Public |
+| `POST` | `/announcements/:id/delete`| Web MVC (`AnnouncementController`) | Delete announcement via web & redirect | Public |
 
 ### 🚀 Other & Future Planned Endpoints
 

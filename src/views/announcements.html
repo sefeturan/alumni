@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kullanıcılar - Alumni Network Platformu</title>
+  <title>Duyurular & Haberler - Alumni Network Platformu</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -22,6 +22,10 @@
       --radius: 12px;
       --danger: #ef4444;
       --danger-light: #fee2e2;
+      --warning: #f59e0b;
+      --warning-light: #fef3c7;
+      --success: #10b981;
+      --success-light: #d1fae5;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -55,7 +59,6 @@
     }
 
     .logo span { color: var(--primary); }
-
     .nav-links { display: flex; gap: 1.5rem; list-style: none; align-items: center; }
     .nav-links a { text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.95rem; transition: color 0.2s; }
     .nav-links a:hover, .nav-links a.active { color: var(--primary); }
@@ -68,7 +71,7 @@
 
     .layout-grid {
       display: grid;
-      grid-template-columns: 360px 1fr;
+      grid-template-columns: 380px 1fr;
       gap: 2rem;
       align-items: start;
     }
@@ -141,30 +144,25 @@
 
     .table-container { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; text-align: left; }
-    th, td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    th, td { padding: 0.9rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
     th { background: #f1f5f9; color: var(--dark); font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.03em; }
     tr:hover td { background: #f8fafc; }
 
-    .user-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--primary), var(--secondary));
-      color: white;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
+    .announcement-title a {
       font-weight: 700;
-      font-size: 0.9rem;
-      margin-right: 0.75rem;
-      vertical-align: middle;
+      color: var(--dark);
+      text-decoration: none;
+      font-size: 0.95rem;
+    }
+    .announcement-title a:hover { color: var(--primary); text-decoration: underline; }
+
+    .announcement-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
     }
 
-    .user-meta { display: inline-block; vertical-align: middle; }
-    .user-name { font-weight: 600; color: var(--dark); }
-    .user-email { font-size: 0.8rem; color: var(--text-muted); }
-
-    .role-badge {
+    .category-badge {
       display: inline-block;
       padding: 0.2rem 0.6rem;
       border-radius: 6px;
@@ -172,19 +170,28 @@
       font-weight: 700;
       text-transform: capitalize;
     }
-    .role-alumni { background: #dbeafe; color: #1e40af; }
-    .role-student { background: #fef3c7; color: #92400e; }
-    .role-admin { background: #fce7f3; color: #9d174d; }
+    .cat-general { background: #e2e8f0; color: #334155; }
+    .cat-academic { background: #dbeafe; color: #1e40af; }
+    .cat-career { background: #d1fae5; color: #065f46; }
+    .cat-event { background: #fce7f3; color: #9d174d; }
 
-    .skills-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 180px; }
-    .skill-tag { background: #f1f5f9; color: #475569; padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.75rem; }
-
-    .actions-cell {
-      display: flex;
-      gap: 0.35rem;
-      align-items: center;
+    .priority-badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: capitalize;
     }
+    .prio-low { background: #f1f5f9; color: #64748b; }
+    .prio-medium { background: #dbeafe; color: #2563eb; }
+    .prio-high { background: #fef3c7; color: #b45309; }
+    .prio-urgent { background: #fee2e2; color: #b91c1c; }
 
+    .tags-wrapper { display: flex; flex-wrap: wrap; gap: 0.25rem; max-width: 160px; }
+    .tag-badge { background: #f1f5f9; color: #475569; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 0.72rem; }
+
+    .actions-cell { display: flex; gap: 0.35rem; align-items: center; justify-content: center; }
     .btn-act {
       padding: 0.35rem 0.65rem;
       border-radius: 6px;
@@ -221,8 +228,8 @@
       </a>
       <ul class="nav-links">
         <li><a href="/">Ana Sayfa</a></li>
-        <li><a href="/users" class="active">Kullanıcılar</a></li>
-        <li><a href="/announcements">Duyurular</a></li>
+        <li><a href="/users">Kullanıcılar</a></li>
+        <li><a href="/announcements" class="active">Duyurular</a></li>
         <li><a href="/about">Hakkımızda</a></li>
         <li><a href="/api-docs" class="btn-api" target="_blank">Swagger API</a></li>
       </ul>
@@ -231,95 +238,83 @@
 
   <main>
     <div class="page-header">
-      <h1>👥 Mezun & Kullanıcı Yönetimi</h1>
-      <p>CRUD işlemleri: Kullanıcı ekleyin, listeleyin, profil detayını görüntüleyin, düzenleyin veya silin.</p>
+      <h1>📢 Duyurular & Yönetim Paneli</h1>
+      <p>Topluluk ve mezunlar ağı için yeni duyurular yayınlayın, düzenleyin veya kaldırın.</p>
     </div>
 
     <div class="layout-grid">
-      <!-- CREATE USER FORM (POST /users) -->
+      <!-- CREATE ANNOUNCEMENT FORM -->
       <section class="card">
         <h2>
-          <span>➕ Yeni Kullanıcı Ekle</span>
+          <span>✍️ Yeni Duyuru Yayınla</span>
         </h2>
-        <form action="/users" method="POST" id="createUserForm">
+        <form action="/announcements" method="POST" id="createAnnouncementForm">
           <div class="form-group">
-            <label for="name">Ad Soyad *</label>
-            <input type="text" id="name" name="name" placeholder="Örn: Ahmet Yılmaz" required>
-          </div>
-
-          <div class="form-group">
-            <label for="email">E-posta Adresi *</label>
-            <input type="email" id="email" name="email" placeholder="Örn: ahmet@example.com" required>
+            <label for="title">Duyuru Başlığı *</label>
+            <input type="text" id="title" name="title" placeholder="Örn: 2026 Mezunlar Buluşması Tarihleri" required>
           </div>
 
           <div class="form-row">
             <div class="form-group">
-              <label for="role">Rol</label>
-              <select id="role" name="role">
-                <option value="alumni" selected>Mezun (Alumni)</option>
-                <option value="student">Öğrenci (Student)</option>
-                <option value="admin">Yönetici (Admin)</option>
+              <label for="category">Kategori</label>
+              <select id="category" name="category">
+                <option value="general" selected>Genel (General)</option>
+                <option value="academic">Akademik (Academic)</option>
+                <option value="career">Kariyer / İş (Career)</option>
+                <option value="event">Etkinlik (Event)</option>
               </select>
             </div>
 
             <div class="form-group">
-              <label for="graduationYear">Mezuniyet Yılı</label>
-              <input type="number" id="graduationYear" name="graduationYear" placeholder="Örn: 2022" min="1950" max="2035">
+              <label for="priority">Öncelik Seviyesi</label>
+              <select id="priority" name="priority">
+                <option value="low">Düşük (Low)</option>
+                <option value="medium" selected>Normal (Medium)</option>
+                <option value="high">Yüksek (High)</option>
+                <option value="urgent">Acil (Urgent)</option>
+              </select>
             </div>
           </div>
 
           <div class="form-group">
-            <label for="department">Bölüm</label>
-            <input type="text" id="department" name="department" placeholder="Örn: Bilgisayar Mühendisliği">
-          </div>
-
-          <div class="form-row">
-            <div class="form-group">
-              <label for="company">Şirket / Kurum</label>
-              <input type="text" id="company" name="company" placeholder="Örn: Tech Corp">
-            </div>
-
-            <div class="form-group">
-              <label for="title">Unvan / Pozisyon</label>
-              <input type="text" id="title" name="title" placeholder="Örn: Software Engineer">
-            </div>
+            <label for="author">Yayınlayan / Yazar</label>
+            <input type="text" id="author" name="author" placeholder="Alumni Network Yönetimi">
           </div>
 
           <div class="form-group">
-            <label for="skills">Yetenekler (Virgülle ayırın)</label>
-            <input type="text" id="skills" name="skills" placeholder="JavaScript, Node.js, React">
+            <label for="tags">Etiketler (Virgülle ayırın)</label>
+            <input type="text" id="tags" name="tags" placeholder="Etkinlik, Kampüs, Networking">
           </div>
 
           <div class="form-group">
-            <label for="bio">Biyografi</label>
-            <textarea id="bio" name="bio" rows="2" placeholder="Kısa mezuniyet ve kariyer özeti..."></textarea>
+            <label for="content">Duyuru İçeriği *</label>
+            <textarea id="content" name="content" rows="4" placeholder="Duyuru metnini detaylıca yazınız..." required></textarea>
           </div>
 
-          <button type="submit" class="btn-submit">Kullanıcıyı Kaydet (POST /users)</button>
+          <button type="submit" class="btn-submit">Duyuruyu Yayınla (POST /announcements)</button>
         </form>
       </section>
 
-      <!-- LIST USERS TABLE (GET /users) -->
+      <!-- ANNOUNCEMENTS LISTING TABLE -->
       <section class="card">
         <h2>
-          <span>📋 Kayıtlı Mezunlar & Öğrenciler</span>
-          <span class="badge-count" id="userCount">0</span>
+          <span>📋 Yayınlanan Duyurular</span>
+          <span class="badge-count" id="announcementCount">0</span>
         </h2>
 
         <div class="table-container">
           <table>
             <thead>
               <tr>
-                <th>Kullanıcı</th>
-                <th>Rol</th>
-                <th>Bölüm / Yıl</th>
-                <th>Şirket & Unvan</th>
-                <th>Yetenekler</th>
+                <th>Başlık & Detay</th>
+                <th>Kategori</th>
+                <th>Öncelik</th>
+                <th>Etiketler</th>
                 <th style="text-align: center;">İşlemler</th>
               </tr>
             </thead>
-            <tbody id="usersTableBody">
-              <!-- TEMPLATE_USERS_PLACEHOLDER -->
+            <tbody id="announcementsTableBody">
+              <!-- TEMPLATE_ANNOUNCEMENTS_PLACEHOLDER -->
             </tbody>
           </table>
         </div>
