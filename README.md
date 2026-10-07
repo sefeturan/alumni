@@ -12,7 +12,11 @@ Backend RESTful API and communication service for the **Alumni Networking Platfo
 - [About the Project](#about-the-project)
 - [Key Features](#key-features)
 - [Tech Stack](#tech-stack)
-- [Project Architecture & Structure](#project-architecture--structure)
+- [MVC Architecture & Project Structure](#mvc-architecture--project-structure)
+  - [MVC Architecture Overview](#mvc-architecture-overview)
+  - [Request Lifecycle (Flow Diagram)](#request-lifecycle-flow-diagram)
+  - [Directory, Folder & File Structure](#directory-folder--file-structure)
+  - [Detailed Component Breakdown](#detailed-component-breakdown)
 - [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
   - [1. Clone Repository](#1-clone-repository)
@@ -57,29 +61,132 @@ The **Alumni Networking Platform** is designed to bridge the gap between graduat
 
 ---
 
-## 📂 Project Architecture & Structure
+## 📂 MVC Architecture & Project Structure
 
-A standard structure for the Node.js backend:
+The application is structured following the **MVC (Model-View-Controller)** architectural pattern, enriched with service and middleware layers to separate concerns, improve maintainability, and ensure scalable code organization.
+
+### 🏛 MVC Architecture Overview
+
+| Layer | Directory | Responsibility / Role in App |
+| :--- | :--- | :--- |
+| **Model** | `src/models/` | Represents the data layer, schemas, database entities, and validation rules (e.g., User, Alumni, Post models). |
+| **View** | `src/views/` | The presentation layer containing client-facing templates and static HTML documents served to the user (e.g., landing page, about page). |
+| **Controller** | `src/controllers/` | Coordinates the flow between Models, Services, and Views. Receives client HTTP requests, invokes business logic, and returns formatted responses (JSON or rendered views). |
+| **Routes** | `src/routes/` | Maps HTTP methods and URL paths (endpoints) to their corresponding controller functions or views. |
+
+#### Supporting Architectural Layers
+- **Services (`src/services/`)**: Encapsulates core business logic, third-party integrations, and complex data operations decoupled from HTTP controllers.
+- **Middlewares (`src/middlewares/`)**: Intercepts requests for authentication (JWT), role checking, request validation, and centralized error handling.
+- **Config (`src/config/`)**: Centralizes configuration settings such as database connections, environment variables, and third-party credentials.
+- **Utils (`src/utils/`)**: Reusable helper functions, formatters, and utility modules across the codebase.
+
+---
+
+### 🔄 Request Lifecycle (Flow Diagram)
 
 ```text
-alumni-backend/
-├── src/
-│   ├── config/         # Database and environment configurations
-│   ├── controllers/    # Request handlers & controllers
-│   ├── middlewares/    # Authentication, validation, and error middlewares
-│   ├── models/         # Database models / schemas
-│   ├── routes/         # API endpoint routes
-│   ├── services/       # Business logic layer
-│   ├── utils/          # Utility functions and helpers
-│   └── app.js          # App entrypoint and Express setup
-├── .env.example        # Sample environment variables
-├── .dockerignore       # Excluded files for Docker build
-├── .gitignore          # Git ignore file
-├── Dockerfile          # Docker container configuration
-├── docker-compose.yml  # Multi-container orchestration (App + DB)
-├── package.json        # Dependencies and scripts
-└── README.md           # Project documentation
+ ┌────────────┐
+ │   Client   │ (Browser / Mobile / Postman)
+ └──────┬─────┘
+        │ HTTP Request (e.g. GET /about, GET /sum/5/10)
+        ▼
+ ┌──────────────┐
+ │  src/app.js  │ Express Entrypoint & Global Middlewares (CORS, JSON Parser)
+ └──────┬───────┘
+        │ Dispatches to matching route
+        ▼
+ ┌──────────────┐
+ │  src/routes/ │ Route Definitions (e.g., routes/about.js, routes/sum.js)
+ └──────┬───────┘
+        │ Passes to Middlewares (Auth, Validation) & Controllers
+        ▼
+ ┌──────────────────┐
+ │ src/controllers/ │ Request Handler & Orchestration
+ └──────┬───────────┘
+        ├──────────────────────────┬──────────────────────────┐
+        ▼                          ▼                          ▼
+ ┌──────────────┐           ┌──────────────┐           ┌──────────────┐
+ │src/services/ │           │ src/models/  │           │  src/views/  │
+ │Business Logic│           │Data & Schemas│           │  HTML Views  │
+ └──────┬───────┘           └──────┬───────┘           └──────┬───────┘
+        │                          │                          │
+        └──────────────────────────┼──────────────────────────┘
+                                   │ Response (HTML / JSON)
+                                   ▼
+                            ┌────────────┐
+                            │   Client   │
+                            └────────────┘
 ```
+
+---
+
+### 🗂 Directory, Folder & File Structure
+
+Below is the complete project directory layout including currently existing files and architectural directories:
+
+```text
+alumni-main/
+├── src/
+│   ├── app.js                 # [Entrypoint] Express setup, middlewares, port listener, route bindings
+│   ├── config/                # [Configuration] Database connections and environment configurations
+│   │   └── swagger.js         # OpenAPI 3.0 / Swagger UI configuration for /api/users and /users
+│   ├── controllers/           # [Controller Layer] Request handlers connecting Routes with Models & Services
+│   │   ├── ApiUserController.js # RESTful JSON API controller for User CRUD operations
+│   │   └── UserController.js    # Traditional MVC web controller for User views, forms, and redirects
+│   ├── middlewares/           # [Middlewares] Auth guards, schema validators, error handlers
+│   ├── models/                # [Model Layer] Database models, entity definitions, and schemas
+│   │   └── User.js            # In-memory User model providing full CRUD operations
+│   ├── routes/                # [Routing Layer] API & View endpoint definitions
+│   │   ├── about.js           # Route serving the About page view (/about)
+│   │   ├── apiUser.js         # RESTful API routes mounted at /api/users
+│   │   ├── sum.js             # Route performing arithmetic summation (/sum/:number1/:number2)
+│   │   └── user.js            # Traditional MVC web routes mounted at /users
+│   ├── services/              # [Service Layer] Business logic & database operations
+│   ├── utils/                 # [Utilities] Helper functions, logging, and common tools
+│   └── views/                 # [View Layer] Front-end presentation templates and HTML files
+│       ├── about.html         # About page UI template for Alumni Network Platform
+│       ├── index.html         # Interactive landing page UI for Alumni Network Platform
+│       ├── user-detail.html   # User profile detail view (GET /users/:id)
+│       ├── user-edit.html     # User profile edit form view (GET /users/:id/edit)
+│       └── users.html         # Users management view with registration form and listing table
+├── .env                       # Local environment variables file (ignored by git)
+├── .env.example               # Template environment variables for setup
+├── .gitignore                 # Files and directories ignored by Git
+├── package.json               # Project manifest, npm dependencies, and npm scripts
+├── package-lock.json          # Deterministic dependency tree lockfile
+└── README.md                  # Comprehensive project documentation
+```
+
+---
+
+### 🔍 Detailed Component Breakdown
+
+| Type | Path / Name | Layer | Description |
+| :--- | :--- | :--- | :--- |
+| **File** | [`src/app.js`](file:///Users/sefeturan/Downloads/alumni-main/src/app.js) | **Entrypoint** | Initializes Express, mounts global middlewares (`cors`, `express.json`), Swagger UI (`/api-docs`), core endpoints, and registers route modules. |
+| **Directory** | `src/config/` | **Config** | Manages environment-specific configurations, database clients, and documentation setups. |
+| **File** | [`src/config/swagger.js`](file:///Users/sefeturan/Downloads/alumni-main/src/config/swagger.js) | **Config / Docs** | OpenAPI 3.0 specification defining schemas and endpoints for `/api/users` and `/users`, served via Swagger UI at `/api-docs`. |
+| **Directory** | `src/models/` | **Model** | Holds database schemas and data models (PostgreSQL tables, MongoDB schemas, ORM/ODM representations). |
+| **File** | [`src/models/User.js`](file:///Users/sefeturan/Downloads/alumni-main/src/models/User.js) | **Model** | In-memory User data model with asynchronous CRUD methods (`create`, `findAll`, `findById`, `findByEmail`, `findByIdAndUpdate`, `findByIdAndDelete`). |
+| **Directory** | `src/views/` | **View** | Contains static and dynamic HTML templates served by endpoints. |
+| **File** | [`src/views/index.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/index.html) | **View** | Interactive landing page served at root route (`GET /`). |
+| **File** | [`src/views/about.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/about.html) | **View** | Styled "About Us" page served at `GET /about`. |
+| **File** | [`src/views/users.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/users.html) | **View** | User management view providing a creation form (`POST /users`) and dynamic listing table (`GET /users`). |
+| **File** | [`src/views/user-detail.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/user-detail.html) | **View** | Dedicated single user profile view page displaying full user info and action buttons (`GET /users/:id`). |
+| **File** | [`src/views/user-edit.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/user-edit.html) | **View** | Pre-filled profile update form view page (`GET /users/:id/edit`). |
+| **Directory** | `src/controllers/`| **Controller** | Handles HTTP requests, calls appropriate services/models, and generates HTTP responses. |
+| **File** | [`src/controllers/ApiUserController.js`](file:///Users/sefeturan/Downloads/alumni-main/src/controllers/ApiUserController.js) | **Controller** | RESTful JSON API controller handling User CRUD operations with standardized JSON responses and HTTP status codes. |
+| **File** | [`src/controllers/UserController.js`](file:///Users/sefeturan/Downloads/alumni-main/src/controllers/UserController.js) | **Controller** | Traditional MVC controller for web views, handling user listing, profile viewing, HTML form submissions, and redirects. |
+| **Directory** | `src/routes/` | **Routing** | Maps incoming HTTP URLs to corresponding controllers or view-rendering logic. |
+| **File** | [`src/routes/apiUser.js`](file:///Users/sefeturan/Downloads/alumni-main/src/routes/apiUser.js) | **Routing / API** | Routes HTTP requests to `ApiUserController` (mounted at `/api/users`). |
+| **File** | [`src/routes/user.js`](file:///Users/sefeturan/Downloads/alumni-main/src/routes/user.js) | **Routing / Web** | Routes HTTP requests to `UserController` (mounted at `/users`). |
+| **File** | [`src/routes/about.js`](file:///Users/sefeturan/Downloads/alumni-main/src/routes/about.js) | **Routing / View** | Delivers the `about.html` view upon receiving `GET /about`. |
+| **File** | [`src/routes/sum.js`](file:///Users/sefeturan/Downloads/alumni-main/src/routes/sum.js) | **Routing / Logic**| Handles path parameters at `GET /sum/:number1/:number2` and returns the calculation result. |
+| **Directory** | `src/services/` | **Service** | Manages application business rules, external API integrations, and database operations. |
+| **Directory** | `src/middlewares/`| **Middleware**| Custom Express middlewares for JWT authentication, request validation, logging, and error handling. |
+| **Directory** | `src/utils/` | **Utility** | Shared helper functions (formatters, response helpers, math utilities). |
+| **File** | [`.env.example`](file:///Users/sefeturan/Downloads/alumni-main/.env.example) | **Config** | Environment variable blueprint specifying `PORT`, `DATABASE_URL`, `JWT_SECRET`, etc. |
+| **File** | [`package.json`](file:///Users/sefeturan/Downloads/alumni-main/package.json) | **Config** | Node.js project configuration, npm run scripts (`start`, `dev`), and dependencies (`express`, `cors`, `dotenv`, `swagger-ui-express`). |
 
 ---
 
@@ -181,18 +288,38 @@ Inside `package.json`, the following scripts are typically used:
 
 ---
 
-## 🔌 API Overview (Sample Endpoints)
+## 🔌 API Overview & Documentation
+
+> 📖 **Interactive Swagger UI:** Visit [`http://localhost:5001/api-docs`](http://localhost:5001/api-docs) to test and inspect all endpoints interactively in your browser. Raw OpenAPI spec: [`/swagger.json`](http://localhost:5001/swagger.json).
+
+### 👥 User Endpoints (Implemented)
+
+| Method | Endpoint | Layer / Controller | Description | Access |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | `/api/users` | REST API (`ApiUserController`) | List all users (supports `?role=`, `?department=`) | Public |
+| `POST` | `/api/users` | REST API (`ApiUserController`) | Create a new user (JSON body) | Public |
+| `GET` | `/api/users/:id` | REST API (`ApiUserController`) | Get single user by UUID (JSON) | Public |
+| `PUT` | `/api/users/:id` | REST API (`ApiUserController`) | Update user by UUID (JSON) | Public |
+| `DELETE` | `/api/users/:id` | REST API (`ApiUserController`) | Delete user by UUID | Public |
+| `GET` | `/users` | Web MVC (`UserController`) | List all users (HTML View) | Public |
+| `POST` | `/users` | Web MVC (`UserController`) | Create user via web form & redirect | Public |
+| `GET` | `/users/:id` | Web MVC (`UserController`) | Show user profile page (HTML View) | Public |
+| `POST` | `/users/:id/update` | Web MVC (`UserController`) | Update user from web form & redirect | Public |
+| `POST` | `/users/:id/delete` | Web MVC (`UserController`) | Delete user from web & redirect | Public |
+
+### 🚀 Other & Future Planned Endpoints
 
 | Method | Endpoint | Description | Access |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/api/auth/register` | Register a new alumni account | Public |
-| `POST` | `/api/auth/login` | Authenticate user & return JWT | Public |
-| `GET` | `/api/alumni` | List and search alumni directory | Protected |
-| `GET` | `/api/alumni/:id` | Get detailed alumni profile | Protected |
-| `PUT` | `/api/alumni/profile` | Update current user profile | Protected |
-| `GET` | `/api/messages/:userId`| Get chat history with another alumni | Protected |
-| `POST` | `/api/messages` | Send a direct message | Protected |
-| `GET` | `/api/posts` | Get community posts & announcements | Protected |
+| `GET` | `/api-docs` | Interactive Swagger API Documentation | Public |
+| `GET` | `/health` | Service health status check | Public |
+| `GET` | `/about` | Serves About Us HTML page | Public |
+| `GET` | `/sum/:n1/:n2` | Arithmetic summation utility | Public |
+| `POST` | `/api/auth/register` | Register a new alumni account (Planned) | Public |
+| `POST` | `/api/auth/login` | Authenticate user & return JWT (Planned) | Public |
+| `GET` | `/api/messages/:userId`| Get chat history with another alumni (Planned) | Protected |
+| `POST` | `/api/messages` | Send a direct message (Planned) | Protected |
+| `GET` | `/api/posts` | Get community posts & announcements (Planned) | Protected |
 
 ---
 

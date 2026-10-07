@@ -33,6 +33,11 @@ app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
 
+// Swagger API Documentation
+const { swaggerUi, swaggerSpec } = require('./config/swagger');
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.get('/swagger.json', (req, res) => res.json(swaggerSpec));
+
 // Sum route module from separate file
 const sumRoutes = require('./routes/sum');
 app.use('/sum', sumRoutes);
@@ -40,6 +45,14 @@ app.use('/sum', sumRoutes);
 // About page route module from separate file
 const aboutRoutes = require('./routes/about');
 app.use('/about', aboutRoutes);
+
+// User Web / MVC routes
+const userRoutes = require('./routes/user');
+app.use('/users', userRoutes);
+
+// User RESTful API routes
+const apiUserRoutes = require('./routes/apiUser');
+app.use('/api/users', apiUserRoutes);
 
 if (require.main === module) {
   const server = app.listen(PORT, () => {

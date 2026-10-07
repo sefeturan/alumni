@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kullanıcılar - Alumni Network Platformu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-dark: #1d4ed8;
+      --primary-light: #dbeafe;
+      --secondary: #0ea5e9;
+      --dark: #0f172a;
+      --card-bg: #ffffff;
+      --body-bg: #f8fafc;
+      --text: #334155;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      --radius: 12px;
+      --danger: #ef4444;
+      --danger-light: #fee2e2;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--body-bg); color: var(--text); line-height: 1.6; }
+
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .nav-container {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--dark);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo span { color: var(--primary); }
+
+    .nav-links { display: flex; gap: 1.5rem; list-style: none; align-items: center; }
+    .nav-links a { text-decoration: none; color: var(--text-muted); font-weight: 600; font-size: 0.95rem; transition: color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--primary); }
+    .btn-api { background: var(--primary-light); color: var(--primary-dark) !important; padding: 0.45rem 0.9rem; border-radius: 8px; }
+
+    main { max-width: 1280px; margin: 2.5rem auto; padding: 0 2rem; }
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 { font-size: 2rem; color: var(--dark); margin-bottom: 0.5rem; }
+    .page-header p { color: var(--text-muted); }
+
+    .layout-grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 2rem;
+      align-items: start;
+    }
+
+    @media (max-width: 990px) {
+      .layout-grid { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      padding: 1.75rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .card h2 {
+      font-size: 1.25rem;
+      color: var(--dark);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .badge-count {
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 0.85rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-weight: 700;
+    }
+
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; font-size: 0.875rem; font-weight: 600; color: var(--dark); margin-bottom: 0.4rem; }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.65rem 0.85rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      color: var(--text);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+    .btn-submit {
+      width: 100%;
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.8rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 0.5rem;
+    }
+    .btn-submit:hover { background: var(--primary-dark); }
+
+    .table-container { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th, td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    th { background: #f1f5f9; color: var(--dark); font-weight: 700; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    tr:hover td { background: #f8fafc; }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-right: 0.75rem;
+      vertical-align: middle;
+    }
+
+    .user-meta { display: inline-block; vertical-align: middle; }
+    .user-name { font-weight: 600; color: var(--dark); }
+    .user-email { font-size: 0.8rem; color: var(--text-muted); }
+
+    .role-badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+    .role-alumni { background: #dbeafe; color: #1e40af; }
+    .role-student { background: #fef3c7; color: #92400e; }
+    .role-admin { background: #fce7f3; color: #9d174d; }
+
+    .skills-tags { display: flex; flex-wrap: wrap; gap: 0.3rem; max-width: 180px; }
+    .skill-tag { background: #f1f5f9; color: #475569; padding: 0.15rem 0.45rem; border-radius: 4px; font-size: 0.75rem; }
+
+    .actions-cell {
+      display: flex;
+      gap: 0.35rem;
+      align-items: center;
+    }
+
+    .btn-act {
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      transition: all 0.15s;
+    }
+    .btn-act-view { background: #f1f5f9; color: #334155; }
+    .btn-act-view:hover { background: #e2e8f0; color: var(--primary); }
+    .btn-act-edit { background: var(--primary-light); color: var(--primary-dark); }
+    .btn-act-edit:hover { background: #bfdbfe; }
+    .btn-act-del { background: var(--danger-light); color: var(--danger); }
+    .btn-act-del:hover { background: #fecaca; }
+
+    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="nav-container">
+      <a href="/" class="logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+          <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+        </svg>
+        Alumni<span>Network</span>
+      </a>
+      <ul class="nav-links">
+        <li><a href="/">Ana Sayfa</a></li>
+        <li><a href="/users" class="active">Kullanıcılar</a></li>
+        <li><a href="/about">Hakkımızda</a></li>
+        <li><a href="/api-docs" class="btn-api" target="_blank">Swagger API</a></li>
+      </ul>
+    </div>
+  </header>
+
+  <main>
+    <div class="page-header">
+      <h1>👥 Mezun & Kullanıcı Yönetimi</h1>
+      <p>CRUD işlemleri: Kullanıcı ekleyin, listeleyin, profil detayını görüntüleyin, düzenleyin veya silin.</p>
+    </div>
+
+    <div class="layout-grid">
+      <!-- CREATE USER FORM (POST /users) -->
+      <section class="card">
+        <h2>
+          <span>➕ Yeni Kullanıcı Ekle</span>
+        </h2>
+        <form action="/users" method="POST" id="createUserForm">
+          <div class="form-group">
+            <label for="name">Ad Soyad *</label>
+            <input type="text" id="name" name="name" placeholder="Örn: Ahmet Yılmaz" required>
+          </div>
+
+          <div class="form-group">
+            <label for="email">E-posta Adresi *</label>
+            <input type="email" id="email" name="email" placeholder="Örn: ahmet@example.com" required>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="role">Rol</label>
+              <select id="role" name="role">
+                <option value="alumni" selected>Mezun (Alumni)</option>
+                <option value="student">Öğrenci (Student)</option>
+                <option value="admin">Yönetici (Admin)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="graduationYear">Mezuniyet Yılı</label>
+              <input type="number" id="graduationYear" name="graduationYear" placeholder="Örn: 2022" min="1950" max="2035">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="department">Bölüm</label>
+            <input type="text" id="department" name="department" placeholder="Örn: Bilgisayar Mühendisliği">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="company">Şirket / Kurum</label>
+              <input type="text" id="company" name="company" placeholder="Örn: Tech Corp">
+            </div>
+
+            <div class="form-group">
+              <label for="title">Unvan / Pozisyon</label>
+              <input type="text" id="title" name="title" placeholder="Örn: Software Engineer">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="skills">Yetenekler (Virgülle ayırın)</label>
+            <input type="text" id="skills" name="skills" placeholder="JavaScript, Node.js, React">
+          </div>
+
+          <div class="form-group">
+            <label for="bio">Biyografi</label>
+            <textarea id="bio" name="bio" rows="2" placeholder="Kısa mezuniyet ve kariyer özeti..."></textarea>
+          </div>
+
+          <button type="submit" class="btn-submit">Kullanıcıyı Kaydet (POST /users)</button>
+        </form>
+      </section>
+
+      <!-- LIST USERS TABLE (GET /users) -->
+      <section class="card">
+        <h2>
+          <span>📋 Kayıtlı Mezunlar & Öğrenciler</span>
+          <span class="badge-count" id="userCount">0</span>
+        </h2>
+
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Kullanıcı</th>
+                <th>Rol</th>
+                <th>Bölüm / Yıl</th>
+                <th>Şirket & Unvan</th>
+                <th>Yetenekler</th>
+                <th style="text-align: center;">İşlemler</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <!-- TEMPLATE_USERS_PLACEHOLDER -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>
