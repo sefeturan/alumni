@@ -13,7 +13,11 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Root route: serves the temporary interactive landing page for Alumni Network
+// Swagger Documentation Setup (/api-docs & /api/swagger)
+const { setupSwagger } = require('./config/swagger');
+setupSwagger(app);
+
+// Root route: serves interactive landing page for Alumni Network
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'views', 'index.html'));
 });
@@ -28,15 +32,19 @@ app.get('/hello/:name', (req, res) => {
   res.send(`Hello, ${req.params.name}`);
 });
 
-// Health check endpoint
+// Health check endpoints
+app.get('/api/health', (req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    message: 'Alumni Network API is healthy and running',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'ok' });
 });
-
-// Swagger API Documentation
-const { swaggerUi, swaggerSpec } = require('./config/swagger');
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-app.get('/swagger.json', (req, res) => res.json(swaggerSpec));
 
 // Sum route module from separate file
 const sumRoutes = require('./routes/sum');
@@ -46,11 +54,11 @@ app.use('/sum', sumRoutes);
 const aboutRoutes = require('./routes/about');
 app.use('/about', aboutRoutes);
 
-// User Web / MVC routes
+// User Web / MVC routes (HTML views & form CRUD)
 const userRoutes = require('./routes/user');
 app.use('/users', userRoutes);
 
-// User RESTful API routes
+// User RESTful API routes (JSON responses & API CRUD)
 const apiUserRoutes = require('./routes/apiUser');
 app.use('/api/users', apiUserRoutes);
 

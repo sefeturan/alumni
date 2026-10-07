@@ -1,3 +1,4 @@
+const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 
 /**
@@ -25,9 +26,37 @@ const swaggerSpec = {
     {
       name: 'Web Users (/users)',
       description: 'Traditional MVC Web endpoints for Users (handled by UserController)'
+    },
+    {
+      name: 'Genel & Sağlık (General)',
+      description: 'Genel sistem ve durum kontrol endpointleri'
     }
   ],
   paths: {
+    '/api/health': {
+      get: {
+        tags: ['Genel & Sağlık (General)'],
+        summary: 'Sistem Sağlık Kontrolü (Detaylı)',
+        description: 'Sunucu çalışma süresi, durumu ve zaman damgasını döner.',
+        responses: {
+          200: {
+            description: 'Sistem sorunsuz çalışıyor'
+          }
+        }
+      }
+    },
+    '/health': {
+      get: {
+        tags: ['Genel & Sağlık (General)'],
+        summary: 'Sağlık Kontrolü (Hafif)',
+        responses: {
+          200: {
+            description: 'Durum OK'
+          }
+        }
+      }
+    },
+
     // ==========================================
     // REST API ENDPOINTS: /api/users
     // ==========================================
@@ -226,6 +255,36 @@ const swaggerSpec = {
           }
         }
       },
+      patch: {
+        tags: ['API Users (/api/users)'],
+        summary: 'Partially update user by ID',
+        description: 'Updates specified fields of an existing user.',
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            description: 'Unique User UUID',
+            schema: { type: 'string' }
+          }
+        ],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: { $ref: '#/components/schemas/UserUpdateInput' }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'User updated successfully'
+          },
+          404: {
+            description: 'User not found'
+          }
+        }
+      },
       delete: {
         tags: ['API Users (/api/users)'],
         summary: 'Delete user by ID',
@@ -289,7 +348,7 @@ const swaggerSpec = {
       post: {
         tags: ['Web Users (/users)'],
         summary: 'Create user via web form',
-        description: 'Processes form submission, creates user, and redirects to user profile.',
+        description: 'Processes form submission, creates user, and redirects to users list.',
         requestBody: {
           required: true,
           content: {
@@ -303,7 +362,7 @@ const swaggerSpec = {
         },
         responses: {
           302: {
-            description: 'Redirects to /users/{id}'
+            description: 'Redirects to /users'
           },
           400: {
             description: 'Creation failed (HTML error view)'
@@ -344,7 +403,7 @@ const swaggerSpec = {
       get: {
         tags: ['Web Users (/users)'],
         summary: 'View user edit form (HTML View)',
-        description: 'Renders the edit form pre-filled with the user\'s current data.',
+        description: 'Renders the edit form pre-filled with the user data.',
         parameters: [
           {
             name: 'id',
@@ -487,7 +546,22 @@ const swaggerSpec = {
   }
 };
 
+function setupSwagger(app) {
+  // Swagger UI mount at both /api-docs and /api/swagger
+  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.use('/api/swagger', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
+    customSiteTitle: 'Alumni Network - Swagger API Docs',
+    customCss: '.swagger-ui .topbar { display: flex; background-color: #1e3a8a; }'
+  }));
+
+  app.get(['/swagger.json', '/api/swagger.json'], (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    res.json(swaggerSpec);
+  });
+}
+
 module.exports = {
   swaggerUi,
-  swaggerSpec
+  swaggerSpec,
+  setupSwagger
 };

@@ -2,6 +2,7 @@
 
 [![Node.js](https://img.shields.io/badge/Node.js-v18+-green.svg)](https://nodejs.org/)
 [![Docker](https://img.shields.io/badge/Docker-ready-blue.svg)](https://www.docker.com/)
+[![Swagger](https://img.shields.io/badge/Swagger-API%20Docs-85EA2D?logo=swagger&logoColor=black)](http://localhost:5000/api/swagger)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](#license)
 
 Backend RESTful API and communication service for the **Alumni Networking Platform**, a dedicated web application connecting university and school graduates to network, collaborate, share career opportunities, and communicate.
@@ -25,6 +26,7 @@ Backend RESTful API and communication service for the **Alumni Networking Platfo
   - [4. Running Locally without Docker](#4-running-locally-without-docker)
 - [Available Scripts](#available-scripts)
 - [API Overview](#api-overview)
+- [📘 Swagger API Documentation](#-swagger-api-documentation)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -320,6 +322,54 @@ Inside `package.json`, the following scripts are typically used:
 | `GET` | `/api/messages/:userId`| Get chat history with another alumni (Planned) | Protected |
 | `POST` | `/api/messages` | Send a direct message (Planned) | Protected |
 | `GET` | `/api/posts` | Get community posts & announcements (Planned) | Protected |
+
+---
+
+## 📘 Swagger API Documentation
+
+Bu proje, tüm REST API uç noktalarının interaktif olarak görüntülenebildiği ve test edilebildiği **Swagger UI** entegrasyonu içermektedir.
+
+### 🔗 Swagger UI Adresi
+
+Sunucu çalışır durumdayken tarayıcınızdan aşağıdaki adrese gidin:
+
+```
+http://localhost:5000/api/swagger
+```
+
+### ✨ Swagger ile Neler Yapabilirsiniz?
+
+- **Tüm endpoint'leri görüntüleme:** `GET`, `POST`, `PUT`, `PATCH`, `DELETE` metodlarıyla tüm uç noktalar tek bir sayfada listelenir.
+- **Canlı test:** Her endpoint'i doğrudan Swagger arayüzünden test edebilirsiniz; body, parametre ve response'ları anında görebilirsiniz.
+- **Parametre ve şema bilgisi:** Her endpoint'in hangi veri tiplerini kabul ettiğini ve hangi yanıtları döndürdüğünü detaylıca inceleyebilirsiniz.
+- **OpenAPI JSON:** `http://localhost:5000/api/swagger.json` adresinden OpenAPI 3.0 formatındaki tam spesifikasyonu indirebilirsiniz (Postman import için kullanışlıdır).
+
+### 🛠 Swagger Teknik Detayları
+
+| Özellik | Detay |
+| :--- | :--- |
+| **Kütüphane** | `swagger-ui-express` + `swagger-jsdoc` |
+| **Standart** | OpenAPI 3.0 |
+| **Konfigürasyon Dosyası** | `src/config/swagger.js` |
+| **UI Adresi** | `http://localhost:5000/api/swagger` |
+| **JSON Spec Adresi** | `http://localhost:5000/api/swagger.json` |
+
+### ➕ Yeni Endpoint Nasıl Swagger'a Eklenir?
+
+Bundan sonra geliştirilen tüm endpoint'ler `src/config/swagger.js` dosyasındaki `paths` nesnesine eklenerek dokümante edilmelidir. Böylece Swagger her zaman güncel ve tam kalır.
+
+```js
+// Örnek: src/config/swagger.js içindeki paths bölümüne yeni endpoint eklemek
+'/api/posts': {
+  get: {
+    tags: ['Paylaşımlar'],
+    summary: 'Tüm postları listele',
+    responses: {
+      200: { description: 'Başarılı' }
+    }
+  }
+}
+```
 
 ---
 

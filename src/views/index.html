@@ -343,6 +343,136 @@
       white-space: pre-wrap;
     }
 
+    /* Interactive POST Form Styles */
+    .user-form-section {
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2rem;
+      margin-bottom: 3rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .form-group label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--dark);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      background: #ffffff;
+    }
+
+    .form-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-light);
+    }
+
+    .btn-submit {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.85rem 1.75rem;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .btn-submit:hover {
+      background: var(--primary-dark);
+      transform: translateY(-1px);
+    }
+
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+
+    .saved-users-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1rem;
+    }
+
+    .user-pill {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+
+    .user-pill:hover {
+      transform: translateY(-2px);
+      border-color: var(--primary);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .user-pill-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 700;
+      color: var(--dark);
+    }
+
+    .user-pill-id {
+      background: var(--primary-light);
+      color: var(--primary);
+      font-size: 0.75rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      font-weight: 700;
+    }
+
+    .user-pill-email {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      word-break: break-all;
+    }
+
+    .user-pill-meta {
+      font-size: 0.8rem;
+      color: #059669;
+      font-weight: 600;
+    }
+
+    .user-pill-custom {
+      font-size: 0.8rem;
+      background: #e0f2fe;
+      color: #0369a1;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      margin-top: 0.25rem;
+      display: inline-block;
+    }
+
     footer {
       background: white;
       border-top: 1px solid var(--border);
@@ -366,6 +496,7 @@
       <ul class="nav-links">
         <li><a href="#features">Özellikler</a></li>
         <li><a href="#directory">Mezun Rehberi</a></li>
+        <li><a href="#user-form">Kullanıcı Ekle (POST)</a></li>
         <li><a href="/about">Hakkımızda</a></li>
         <li><a href="#api-tester">API Canlı Test</a></li>
         <li><span class="status-badge"><span class="status-dot"></span> Backend Aktif</span></li>
@@ -479,18 +610,137 @@
       </div>
     </div>
 
+    <!-- Interactive POST Form Section -->
+    <div class="user-form-section" id="user-form">
+      <div class="section-title">
+        <span>✍️</span> Yeni Kullanıcı Kaydet (POST /api/users)
+      </div>
+      <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+        Aşağıdaki alanlara bilgileri girin, <strong>Kullanıcıyı Kaydet (POST)</strong> butonuna basarak sunucuya gönderin ve kaydedin:
+      </p>
+
+      <form id="addUserForm" onsubmit="handleUserSubmit(event)">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="userName">Ad Soyad *</label>
+            <input type="text" id="userName" name="name" class="form-input" placeholder="Örn: Sefe Turan" required>
+          </div>
+          <div class="form-group">
+            <label for="userEmail">E-posta Adresi *</label>
+            <input type="email" id="userEmail" name="email" class="form-input" placeholder="Örn: sefe@example.com" required>
+          </div>
+          <div class="form-group">
+            <label for="userDept">Bölüm / Departman</label>
+            <input type="text" id="userDept" name="department" class="form-input" placeholder="Örn: Yazılım Mühendisliği">
+          </div>
+          <div class="form-group">
+            <label for="userGradYear">Mezuniyet Yılı</label>
+            <input type="number" id="userGradYear" name="graduationYear" class="form-input" placeholder="Örn: 2024">
+          </div>
+        </div>
+
+        <!-- İsteğe bağlı özel değişken / veri girme alanı -->
+        <div style="margin-top: 1.25rem; background: #f8fafc; border: 1px dashed var(--border); border-radius: 8px; padding: 1rem;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: var(--text); margin-bottom: 0.5rem;">
+            ➕ Ekstra Özel Değişken Ekle (İsteğe Bağlı)
+          </div>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 140px;">
+              <input type="text" id="customKey" class="form-input" placeholder="Değişken Adı (Örn: unvan, sirket, sehir)">
+            </div>
+            <div style="flex: 1; min-width: 140px;">
+              <input type="text" id="customValue" class="form-input" placeholder="Değeri (Örn: Kıdemli Geliştirici, İstanbul)">
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+          <button type="submit" id="submitBtn" class="btn-submit">
+            <span>🚀</span> Kullanıcıyı Kaydet (POST İsteği Gönder)
+          </button>
+          <span id="formFeedback" style="font-weight: 600; font-size: 0.95rem;"></span>
+        </div>
+      </form>
+
+      <!-- Sitede Kayıtlı Kullanıcılar Tablosu / Kartları -->
+      <div style="margin-top: 2.5rem; border-top: 1px solid var(--border); pt: 1.5rem; padding-top: 1.5rem;">
+        <h4 style="font-size: 1.2rem; font-weight: 700; color: var(--dark); margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between;">
+          <span style="display: flex; align-items: center; gap: 0.5rem;"><span>📋</span> Sitede Kayıtlı Kullanıcılar</span>
+          <button type="button" onclick="loadSavedUsers()" style="background: none; border: 1px solid var(--border); border-radius: 6px; padding: 0.3rem 0.75rem; cursor: pointer; font-size: 0.85rem; color: var(--primary); font-weight: 600;">🔄 Listeyi Yenile</button>
+        </h4>
+        <div id="savedUsersList" class="saved-users-grid">
+          <!-- Dinamik olarak doldurulur -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Interactive PATCH & PUT Update Section -->
+    <div class="user-form-section" id="patch-user-form" style="border-left: 4px solid #f59e0b;">
+      <div class="section-title">
+        <span>✏️</span> Kullanıcı Güncelle (PATCH & PUT /api/users/:id)
+      </div>
+      <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+        Güncellemek istediğiniz kullanıcının <strong>ID</strong>'sini yazın ve değiştirmek istediğiniz alanları girin. İster <strong>PATCH</strong> ister <strong>PUT</strong> metodu ile tek tıkla güncelleyebilirsiniz:
+      </p>
+
+      <form id="patchUserForm" onsubmit="event.preventDefault();">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="patchUserId" style="color: #b45309;">Hedef Kullanıcı ID *</label>
+            <input type="number" id="patchUserId" class="form-input" placeholder="Örn: 2" style="font-weight: 700; border-color: #f59e0b;" required>
+          </div>
+          <div class="form-group">
+            <label for="patchUserName">Yeni İsim (Opsiyonel)</label>
+            <input type="text" id="patchUserName" class="form-input" placeholder="Değiştirmek istemiyorsanız boş bırakın">
+          </div>
+          <div class="form-group">
+            <label for="patchUserEmail">Yeni E-posta (Opsiyonel)</label>
+            <input type="email" id="patchUserEmail" class="form-input" placeholder="Değiştirmek istemiyorsanız boş bırakın">
+          </div>
+          <div class="form-group">
+            <label for="patchUserDept">Yeni Bölüm / Departman (Opsiyonel)</label>
+            <input type="text" id="patchUserDept" class="form-input" placeholder="Örn: Yapay Zeka Mühendisliği">
+          </div>
+        </div>
+
+        <div style="margin-top: 1.25rem; background: #fffbeb; border: 1px dashed #f59e0b; border-radius: 8px; padding: 1rem;">
+          <div style="font-size: 0.85rem; font-weight: 700; color: #b45309; margin-bottom: 0.5rem;">
+            ➕ Özel Bir Değişkeni Güncelle veya Ekle
+          </div>
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <div style="flex: 1; min-width: 140px;">
+              <input type="text" id="patchCustomKey" class="form-input" placeholder="Değişken Adı (Örn: unvan, sehir, mezuniyetYili)">
+            </div>
+            <div style="flex: 1; min-width: 140px;">
+              <input type="text" id="patchCustomValue" class="form-input" placeholder="Yeni Değeri (Örn: Kıdemli Geliştirici, 2025)">
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+          <button type="button" onclick="handleUserUpdate('PATCH')" id="patchSubmitBtn" class="btn-submit" style="background: #f59e0b;">
+            <span>🔄</span> PATCH İle Güncelle
+          </button>
+          <button type="button" onclick="handleUserUpdate('PUT')" id="putSubmitBtn" class="btn-submit" style="background: #0284c7;">
+            <span>🔁</span> PUT İle Güncelle
+          </button>
+          <span id="patchFeedback" style="font-weight: 600; font-size: 0.95rem;"></span>
+        </div>
+      </form>
+    </div>
+
     <!-- Live API Tester Panel -->
     <div class="tester-panel" id="api-tester">
       <h3>⚡ Backend REST API Canlı Test İstasyonu</h3>
       <p>Sunucuda aktif olan GET metotlarını doğrudan test etmek için aşağıdaki butonlara tıklayabilirsiniz:</p>
       
       <div class="tester-controls">
+        <button class="test-btn" onclick="testEndpoint('/api/health')">GET /api/health</button>
+        <button class="test-btn" onclick="testEndpoint('/api/users')">GET /api/users</button>
         <button class="test-btn" onclick="testEndpoint('/health')">GET /health</button>
         <button class="test-btn" onclick="testEndpoint('/hello')">GET /hello</button>
-        <button class="test-btn" onclick="testEndpoint('/hello/Berat')">GET /hello/Berat</button>
-        <button class="test-btn" onclick="testEndpoint('/hello/Efe')">GET /hello/Efe</button>
+        <button class="test-btn" onclick="testEndpoint('/hello/Sefe')">GET /hello/Sefe</button>
         <button class="test-btn" onclick="testEndpoint('/sum/25/75')">GET /sum/25/75</button>
-        <button class="test-btn" onclick="testEndpoint('/sum/100/250')">GET /sum/100/250</button>
       </div>
 
       <div class="terminal" id="terminalOutput">Tepkiyi görmek için yukarıdaki API test butonlarından birine tıklayınız...</div>
@@ -507,13 +757,15 @@
     const searchInput = document.getElementById('searchInput');
     const cards = document.querySelectorAll('.alumni-card');
 
-    searchInput.addEventListener('input', (e) => {
-      const q = e.target.value.toLowerCase().trim();
-      cards.forEach(card => {
-        const text = (card.dataset.name + ' ' + card.dataset.role + ' ' + card.innerText).toLowerCase();
-        card.style.display = text.includes(q) ? 'flex' : 'none';
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const q = e.target.value.toLowerCase().trim();
+        cards.forEach(card => {
+          const text = (card.dataset.name + ' ' + card.dataset.role + ' ' + card.innerText).toLowerCase();
+          card.style.display = text.includes(q) ? 'flex' : 'none';
+        });
       });
-    });
+    }
 
     // Live API Tester via Fetch (GET Method)
     async function testEndpoint(endpoint) {
@@ -521,12 +773,253 @@
       output.innerText = `> İstek gönderiliyor: GET ${endpoint} ...`;
       try {
         const res = await fetch(endpoint);
-        const text = await res.text();
-        output.innerText = `HTTP ${res.status} ${res.statusText}\nEndpoint: ${endpoint}\nSonuç: ${text}`;
+        const data = await res.json().catch(() => null);
+        if (data) {
+          output.innerText = `HTTP ${res.status} ${res.statusText}\nEndpoint: ${endpoint}\nSonuç:\n${JSON.stringify(data, null, 2)}`;
+        } else {
+          const text = await res.text();
+          output.innerText = `HTTP ${res.status} ${res.statusText}\nEndpoint: ${endpoint}\nSonuç: ${text}`;
+        }
       } catch (err) {
         output.innerText = `Hata: ${err.message}`;
       }
     }
+
+    // Kayıtlı Kullanıcıları GET /api/users ile çekip ekrana basma
+    async function loadSavedUsers() {
+      const usersList = document.getElementById('savedUsersList');
+      if (!usersList) return;
+
+      try {
+        const res = await fetch('/api/users');
+        const data = await res.json();
+        const users = data.users || [];
+
+        if (users.length === 0) {
+          usersList.innerHTML = '<p style="color: var(--text-muted); font-size: 0.95rem; grid-column: 1 / -1;">Henüz kayıtlı kullanıcı bulunmuyor. Yukarıdaki formdan ekleyebilirsiniz.</p>';
+          return;
+        }
+
+        const defaultKeys = ['id', 'name', 'ad', 'email', 'department', 'bolum', 'graduationYear', 'mezuniyetYili', 'createdAt', 'role'];
+
+        usersList.innerHTML = users.map(user => {
+          const extraKeys = Object.keys(user).filter(k => !defaultKeys.includes(k));
+          const extraBadges = extraKeys.map(k => `<span class="user-pill-custom">${k}: ${user[k]}</span>`).join(' ');
+
+          const displayName = user.name || user.ad || 'İsimsiz';
+          const displayEmail = user.email || '-';
+          const displayDept = user.department || user.bolum || '';
+          const displayYear = user.graduationYear || user.mezuniyetYili || '';
+
+          return `
+            <div class="user-pill">
+              <div class="user-pill-header">
+                <span>${displayName}</span>
+                <span class="user-pill-id">#${user.id}</span>
+              </div>
+              <div class="user-pill-email">${displayEmail}</div>
+              ${(displayDept || displayYear) ? `<div class="user-pill-meta">${displayDept} ${displayYear ? `'${displayYear}` : ''}</div>` : ''}
+              <div style="margin-top: 0.5rem; display: flex; gap: 0.4rem; flex-wrap: wrap;">
+                <button onclick="fillPatchForm(${user.id})" style="background: #fffbeb; border: 1px solid #fde68a; color: #b45309; border-radius: 6px; padding: 0.3rem 0.6rem; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: background 0.2s;">
+                  ✏️ Güncelle (ID: ${user.id})
+                </button>
+                <button onclick="handleDeleteUser(${user.id})" style="background: #fee2e2; border: 1px solid #fecaca; color: #dc2626; border-radius: 6px; padding: 0.3rem 0.6rem; cursor: pointer; font-size: 0.8rem; font-weight: 700; transition: background 0.2s;">
+                  🗑️ Sil (DELETE)
+                </button>
+              </div>
+            </div>
+          `;
+        }).reverse().join('');
+      } catch (err) {
+        usersList.innerHTML = `<p style="color: #dc2626;">Kullanıcılar yüklenemedi: ${err.message}</p>`;
+      }
+    }
+
+    // Kullanıcı Silme (DELETE /api/users/:id)
+    async function handleDeleteUser(id) {
+      if (!confirm(`ID'si #${id} olan kullanıcıyı silmek istediğinize emin misiniz?`)) {
+        return;
+      }
+      try {
+        const res = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+        const result = await res.json();
+        if (res.ok) {
+          await loadSavedUsers();
+          const terminal = document.getElementById('terminalOutput');
+          if (terminal) {
+            terminal.innerText = `DELETE /api/users/${id} - 200 OK\nSilinen Kullanıcı:\n${JSON.stringify(result, null, 2)}`;
+          }
+        } else {
+          alert(`Hata: ${result.message || 'Kullanıcı silinemedi'}`);
+        }
+      } catch (err) {
+        alert(`Bağlantı hatası: ${err.message}`);
+      }
+    }
+
+    // PATCH formuna ID ve alanları doldurma yardımcısı
+    function fillPatchForm(id) {
+      const idInput = document.getElementById('patchUserId');
+      idInput.value = id;
+      const formSection = document.getElementById('patch-user-form');
+      if (formSection) {
+        formSection.scrollIntoView({ behavior: 'smooth' });
+      }
+      idInput.focus();
+    }
+
+    // Kullanıcı Güncelleme (PATCH veya PUT /api/users/:id)
+    async function handleUserUpdate(method = 'PATCH') {
+      const feedback = document.getElementById('patchFeedback');
+      const submitBtn = method === 'PUT' ? document.getElementById('putSubmitBtn') : document.getElementById('patchSubmitBtn');
+
+      const id = document.getElementById('patchUserId').value.trim();
+      const name = document.getElementById('patchUserName').value.trim();
+      const email = document.getElementById('patchUserEmail').value.trim();
+      const department = document.getElementById('patchUserDept').value.trim();
+      const customKey = document.getElementById('patchCustomKey').value.trim();
+      const customValue = document.getElementById('patchCustomValue').value.trim();
+
+      if (!id) {
+        feedback.style.color = '#dc2626';
+        feedback.innerText = 'Lütfen bir kullanıcı ID belirtin.';
+        return;
+      }
+
+      // Sadece dolu girilen alanları payload'a ekliyoruz
+      const payload = {};
+      if (name) payload.name = name;
+      if (email) payload.email = email;
+      if (department) payload.department = department;
+      if (customKey && customValue) payload[customKey] = customValue;
+
+      if (Object.keys(payload).length === 0) {
+        feedback.style.color = '#dc2626';
+        feedback.innerText = 'Lütfen güncellenecek en az bir alan doldurun!';
+        return;
+      }
+
+      if (submitBtn) submitBtn.disabled = true;
+      feedback.style.color = 'var(--text-muted)';
+      feedback.innerText = `${method} /api/users/${id} gönderiliyor...`;
+
+      try {
+        const response = await fetch(`/api/users/${id}`, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          feedback.style.color = '#059669';
+          feedback.innerText = `✅ Başarılı! ID #${id} (${method}) ile güncellendi.`;
+
+          document.getElementById('patchUserName').value = '';
+          document.getElementById('patchUserEmail').value = '';
+          document.getElementById('patchUserDept').value = '';
+          document.getElementById('patchCustomKey').value = '';
+          document.getElementById('patchCustomValue').value = '';
+
+          await loadSavedUsers();
+
+          const terminal = document.getElementById('terminalOutput');
+          if (terminal) {
+            terminal.innerText = `${method} /api/users/${id} - ${response.status} OK\nGüncellenen Alanlar:\n${JSON.stringify(payload, null, 2)}\n\nSunucu Yanıtı:\n${JSON.stringify(result, null, 2)}`;
+          }
+        } else {
+          feedback.style.color = '#dc2626';
+          feedback.innerText = `❌ Hata: ${result.message || 'Güncellenemedi'}`;
+        }
+      } catch (err) {
+        feedback.style.color = '#dc2626';
+        feedback.innerText = `❌ Bağlantı hatası: ${err.message}`;
+      } finally {
+        if (submitBtn) submitBtn.disabled = false;
+        setTimeout(() => {
+          feedback.innerText = '';
+        }, 5000);
+      }
+    }
+
+    // Kullanıcı Kaydetme (POST /api/users)
+    async function handleUserSubmit(event) {
+      event.preventDefault();
+      const feedback = document.getElementById('formFeedback');
+      const submitBtn = document.getElementById('submitBtn');
+
+      const name = document.getElementById('userName').value.trim();
+      const email = document.getElementById('userEmail').value.trim();
+      const department = document.getElementById('userDept').value.trim();
+      const graduationYear = document.getElementById('userGradYear').value.trim();
+      const customKey = document.getElementById('customKey').value.trim();
+      const customValue = document.getElementById('customValue').value.trim();
+
+      const payload = {
+        name,
+        email
+      };
+
+      if (department) payload.department = department;
+      if (graduationYear) payload.graduationYear = Number(graduationYear);
+      if (customKey && customValue) {
+        payload[customKey] = customValue;
+      }
+
+      submitBtn.disabled = true;
+      feedback.style.color = 'var(--text-muted)';
+      feedback.innerText = 'POST isteği gönderiliyor...';
+
+      try {
+        const response = await fetch('/api/users', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+          feedback.style.color = '#059669';
+          feedback.innerText = `✅ Başarılı! Kullanıcı kaydedildi (ID: #${result.user.id})`;
+          
+          document.getElementById('userName').value = '';
+          document.getElementById('userEmail').value = '';
+          document.getElementById('userDept').value = '';
+          document.getElementById('userGradYear').value = '';
+          document.getElementById('customKey').value = '';
+          document.getElementById('customValue').value = '';
+          
+          await loadSavedUsers();
+
+          const terminal = document.getElementById('terminalOutput');
+          if (terminal) {
+            terminal.innerText = `POST /api/users - ${response.status} Created\nGönderilen Veri:\n${JSON.stringify(payload, null, 2)}\n\nSunucu Yanıtı:\n${JSON.stringify(result, null, 2)}`;
+          }
+        } else {
+          feedback.style.color = '#dc2626';
+          feedback.innerText = `❌ Hata: ${result.message || 'Kullanıcı eklenemedi'}`;
+        }
+      } catch (error) {
+        feedback.style.color = '#dc2626';
+        feedback.innerText = `❌ Bağlantı hatası: ${error.message}`;
+      } finally {
+        submitBtn.disabled = false;
+        setTimeout(() => {
+          feedback.innerText = '';
+        }, 5000);
+      }
+    }
+
+    // Sayfa açıldığında kayıtlı kullanıcıları listele
+    window.addEventListener('DOMContentLoaded', () => {
+      loadSavedUsers();
+    });
   </script>
 </body>
 </html>
