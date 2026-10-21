@@ -1,0 +1,122 @@
+services:
+  # ==========================================================
+  # 1. Production API Service (Default)
+  # Run: docker compose up -d
+  # ==========================================================
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: prod
+    container_name: alumni_app
+    restart: unless-stopped
+    ports:
+      - "${PORT:-5001}:5001"
+    environment:
+      - NODE_ENV=production
+      - PORT=5001
+      - DATA_DIR=/app/data
+      - DATABASE_URL=postgres://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-alumni_db}
+    volumes:
+      - alumni_data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - alumni_net
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:5001/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  # ==========================================================
+  # 2. Development API Service (Hot-Reload / Nodemon)
+  # Run: docker compose --profile dev up
+  # ==========================================================
+  app-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: dev
+    container_name: alumni_app_dev
+    restart: unless-stopped
+    command: npm run dev
+    ports:
+      - "${PORT:-5001}:5001"
+    environment:
+      - NODE_ENV=development
+      - PORT=5001
+      - DATA_DIR=/app/data
+      - DATABASE_URL=postgres://${POSTGRES_USER:-user}:${POSTGRES_PASSWORD:-password}@db:5432/${POSTGRES_DB:-alumni_db}
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - alumni_data:/app/data
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - alumni_net
+    profiles:
+      - dev
+
+  # ==========================================================
+  # 3. PostgreSQL Database Service
+  # Run: docker compose up -d db (or automatically with app)
+  # ==========================================================
+  db:
+    image: postgres:16-alpine
+    container_name: alumni_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_DB: ${POSTGRES_DB:-alumni_db}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - alumni_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-user} -d ${POSTGRES_DB:-alumni_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ==========================================================
+  # 4. Database Web Management GUI (Adminer)
+  # Run: docker compose --profile tools up -d adminer
+  # Accessible at: http://localhost:8080
+  # ==========================================================
+  adminer:
+    image: adminer:latest
+    container_name: alumni_adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    networks:
+      - alumni_net
+    profiles:
+      - dev
+      - tools
+
+# ==========================================================
+# Persistent Volumes (Survives 'docker compose down')
+# ==========================================================
+volumes:
+  alumni_data:
+    name: alumni_data
+  postgres_data:
+    name: postgres_data
+
+# ==========================================================
+# Isolated Bridge Network
+# ==========================================================
+networks:
+  alumni_net:
+    name: alumni_net
+    driver: bridge

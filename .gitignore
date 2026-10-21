@@ -1,3 +1,22 @@
-node_modules
+# Dependencies
+node_modules/
+
+# Environment files
 .env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+!*.example.env
+!*.env.example
+!.example.env
+!.env.example
+!env.example
+
+# Local & Persistent Data
+data/
+
+# OS & Editor files
 .DS_Store
+Thumbs.db

@@ -230,12 +230,13 @@ Create a `.env` file based on the `.env.example`:
 
 ```bash
 cp .env.example .env
+# or: cp .example.env .env
 ```
 
 Configure your environment variables:
 
 ```env
-PORT=5000
+PORT=5001
 NODE_ENV=development
 
 # Database Settings
