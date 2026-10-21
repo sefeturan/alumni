@@ -70,6 +70,15 @@ app.use('/announcements', announcementRoutes);
 const apiAnnouncementRoutes = require('./routes/apiAnnouncement');
 app.use('/api/announcements', apiAnnouncementRoutes);
 
+// Job Posting RESTful API direct routes (JSON responses & API CRUD)
+const apiJobPostingRoutes = require('./routes/apiJobPosting');
+app.use('/api/jobs', apiJobPostingRoutes);
+app.use('/api/job-postings', apiJobPostingRoutes);
+
+// Application RESTful API direct routes (JSON responses & API CRUD)
+const apiApplicationRoutes = require('./routes/apiApplication');
+app.use('/api/applications', apiApplicationRoutes);
+
 if (require.main === module) {
   const server = app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

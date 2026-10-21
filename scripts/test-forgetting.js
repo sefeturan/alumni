@@ -1,7 +1,7 @@
 /**
  * The Forgetting Test Runner
- * Verifies that records survive process termination, container recreation,
- * and cold restarts.
+ * Verifies that records and relationships survive process termination,
+ * container recreation, and cold restarts.
  */
 const { execSync } = require('child_process');
 const path = require('path');
@@ -14,15 +14,21 @@ async function run() {
 
   const User = require('../src/models/User');
   const Announcement = require('../src/models/Announcement');
+  const JobPosting = require('../src/models/JobPosting');
+  const Application = require('../src/models/Application');
 
   // Step 1: Initial state
   console.log('[Step 1] Initial state check...');
   const initialUserCount = await User.count();
   const initialAnnouncementCount = await Announcement.count();
+  const initialJobCount = await JobPosting.count();
+  const initialAppCount = await Application.count();
   console.log(`  Initial users in storage: ${initialUserCount}`);
-  console.log(`  Initial announcements in storage: ${initialAnnouncementCount}\n`);
+  console.log(`  Initial announcements in storage: ${initialAnnouncementCount}`);
+  console.log(`  Initial job postings in storage: ${initialJobCount}`);
+  console.log(`  Initial applications in storage: ${initialAppCount}\n`);
 
-  // Step 2: Create a unique test record
+  // Step 2: Create unique test records
   const testEmail = `alumni_test_${Date.now()}@example.com`;
   console.log(`[Step 2] Creating test records...`);
   const newUser = await User.create({
@@ -41,33 +47,72 @@ async function run() {
     category: 'career',
     priority: 'urgent'
   });
-  console.log(`  ✅ Created Announcement: ID=${newAnnouncement.id}, Title="${newAnnouncement.title}"\n`);
+  console.log(`  ✅ Created Announcement: ID=${newAnnouncement.id}, Title="${newAnnouncement.title}"`);
+
+  const newJob = await JobPosting.create({
+    userId: newUser.id,
+    title: 'Lead Software Architect',
+    company: 'Tech Corp',
+    location: 'Remote',
+    workType: 'remote',
+    employmentType: 'full-time',
+    description: 'Testing if this job posting and its author relation survive cold restart.'
+  });
+  console.log(`  ✅ Created JobPosting: ID=${newJob.id}, Title="${newJob.title}", AuthorId=${newJob.userId}`);
+
+  const newApp = await Application.create({
+    jobId: newJob.id,
+    userId: newUser.id,
+    resumeUrl: 'https://storage.alumni.org/cv/persistence_test.pdf',
+    coverLetter: 'Testing application persistence and relations across cold restart.',
+    status: 'pending'
+  });
+  console.log(`  ✅ Created Application: ID=${newApp.id}, JobId=${newApp.jobId}, ApplicantId=${newApp.userId}\n`);
 
   // Step 3: Verify disk persistence
   console.log('[Step 3] Verifying disk storage synchronization...');
   const dataDir = process.env.DATA_DIR || path.join(__dirname, '../data');
   const usersFile = path.join(dataDir, 'users.json');
   const announcementsFile = path.join(dataDir, 'announcements.json');
+  const jobPostingsFile = path.join(dataDir, 'job_postings.json');
+  const applicationsFile = path.join(dataDir, 'applications.json');
 
-  if (!fs.existsSync(usersFile) || !fs.existsSync(announcementsFile)) {
+  if (!fs.existsSync(usersFile) || !fs.existsSync(announcementsFile) || !fs.existsSync(jobPostingsFile) || !fs.existsSync(applicationsFile)) {
     throw new Error('❌ Storage files not found on disk!');
   }
   console.log(`  ✅ users.json exists at: ${usersFile}`);
-  console.log(`  ✅ announcements.json exists at: ${announcementsFile}\n`);
+  console.log(`  ✅ announcements.json exists at: ${announcementsFile}`);
+  console.log(`  ✅ job_postings.json exists at: ${jobPostingsFile}`);
+  console.log(`  ✅ applications.json exists at: ${applicationsFile}\n`);
 
   // Step 4: Simulate cold restart in a completely fresh, isolated Node.js child process
   console.log('[Step 4] Simulating process termination & cold restart (down -> up)...');
   const verifyScript = `
     const User = require('./src/models/User');
     const Announcement = require('./src/models/Announcement');
+    const JobPosting = require('./src/models/JobPosting');
+    const Application = require('./src/models/Application');
     (async () => {
       const u = await User.findByEmail('${testEmail}');
       const a = await Announcement.findById('${newAnnouncement.id}');
-      if (!u || !a) {
+      const j = await JobPosting.findById('${newJob.id}');
+      const app = await Application.findById('${newApp.id}');
+      if (!u || !a || !j || !app) {
         console.error('FORGOTTEN');
         process.exit(1);
       }
-      console.log('REMEMBERED:' + u.id + ':' + a.id);
+      const userJobs = await u.getJobPostings();
+      const author = await j.getUser();
+      const jobApps = await j.getApplications();
+      const userApps = await u.getApplications();
+      const appJob = await app.getJob();
+      const appUser = await app.getUser();
+
+      if (!author || author.id !== u.id || !appJob || appJob.id !== j.id || !appUser || appUser.id !== u.id) {
+        console.error('RELATIONSHIP_BROKEN');
+        process.exit(2);
+      }
+      console.log('REMEMBERED:' + u.id + ':' + a.id + ':' + j.id + ':' + app.id + ':ALL_RELATIONS_OK');
     })();
   `;
 
@@ -80,12 +125,12 @@ async function run() {
     console.log(`  Output from fresh process: ${output.trim()}`);
     console.log('\n====================================================');
     console.log('🎉 RESULT: THE FORGETTING TEST PASSED!');
-    console.log('   The records were retained after complete process/container destruction!');
+    console.log('   All 4 entities and relationships were retained across cold restart!');
     console.log('====================================================');
   } catch (err) {
     console.error('\n====================================================');
     console.error('❌ RESULT: THE FORGETTING TEST FAILED!');
-    console.error('   The records were lost/forgotten.');
+    console.error('   The records were lost or relationships broken.');
     console.error('====================================================');
     process.exit(1);
   }

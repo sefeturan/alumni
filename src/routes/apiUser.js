@@ -1,11 +1,27 @@
 const express = require('express');
 const router = express.Router();
 const ApiUserController = require('../controllers/ApiUserController');
+const apiUserJobPostingRoutes = require('./apiUserJobPosting');
+const apiUserApplicationRoutes = require('./apiUserApplication');
 
 /**
  * RESTful API User Routes
  * Base path: /api/users
  */
+
+// ==========================================
+// NESTED RESOURCE ROUTES
+// ==========================================
+// /api/users/:userId/jobs & /api/users/:userId/job-postings
+router.use('/:userId/jobs', apiUserJobPostingRoutes);
+router.use('/:userId/job-postings', apiUserJobPostingRoutes);
+
+// /api/users/:userId/applications
+router.use('/:userId/applications', apiUserApplicationRoutes);
+
+// ==========================================
+// USER CRUD ROUTES
+// ==========================================
 
 // GET /api/users - Get all users (supports query filtering: ?role=alumni&department=...)
 router.get('/', ApiUserController.getAllUsers);

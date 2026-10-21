@@ -127,6 +127,48 @@ class User {
   }
 
   // ==========================================
+  // RELATIONSHIPS
+  // ==========================================
+
+  /**
+   * HAS MANY: Retrieves all JobPostings authored by this User.
+   * @returns {Promise<Array>}
+   */
+  async getJobPostings() {
+    const JobPosting = require('./JobPosting');
+    return JobPosting.findByUserId(this.id);
+  }
+
+  /**
+   * HAS MANY (STATIC): Retrieves all JobPostings for a specific user ID.
+   * @param {string} userId
+   * @returns {Promise<Array>}
+   */
+  static async getJobPostings(userId) {
+    const JobPosting = require('./JobPosting');
+    return JobPosting.findByUserId(userId);
+  }
+
+  /**
+   * HAS MANY: Retrieves all Applications submitted by this User.
+   * @returns {Promise<Array>}
+   */
+  async getApplications() {
+    const Application = require('./Application');
+    return Application.findByUserId(this.id);
+  }
+
+  /**
+   * HAS MANY (STATIC): Retrieves all Applications for a specific user ID.
+   * @param {string} userId
+   * @returns {Promise<Array>}
+   */
+  static async getApplications(userId) {
+    const Application = require('./Application');
+    return Application.findByUserId(userId);
+  }
+
+  // ==========================================
   // CRUD OPERATIONS WITH DATABASE CONNECTION
   // ==========================================
 

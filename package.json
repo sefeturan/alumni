@@ -8,6 +8,7 @@
     "dev": "nodemon src/app.js",
     "test": "node scripts/test-forgetting.js",
     "test:forgetting": "node scripts/test-forgetting.js",
+    "test:routes": "node scripts/test-routes.js",
     "migrate": "node src/database/migrator.js up",
     "migrate:reset": "node src/database/migrator.js reset",
     "seed": "node src/database/seed.js"
