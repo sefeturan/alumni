@@ -23,12 +23,12 @@ function guardian5xx(err, req, res, next) {
   // Format error log entry
   const logEntry = `[${timestamp}] ${statusCode} ${method} ${route}\nMessage: ${err.message}\nStack: ${err.stack || 'No stack trace available'}\n${'-'.repeat(60)}\n`;
 
-  // Append error log entry asynchronously to logs/error.log
-  fs.appendFile(errorLogPath, logEntry, (writeErr) => {
-    if (writeErr) {
-      console.error('Failed to write to logs/error.log:', writeErr);
-    }
-  });
+  // Append error log entry to logs/error.log
+  try {
+    fs.appendFileSync(errorLogPath, logEntry);
+  } catch (writeErr) {
+    console.error('Failed to write to logs/error.log:', writeErr);
+  }
 
   // Log summary to terminal
   console.error(`[5xx GUARDIAN] ${timestamp} ${statusCode} ${method} ${route} - ${err.message}`);

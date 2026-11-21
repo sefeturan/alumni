@@ -1,4 +1,9 @@
-const { Pool } = require('pg');
+let Pool = null;
+try {
+  Pool = require('pg').Pool;
+} catch (e) {
+  // pg optional/not available
+}
 require('dotenv').config();
 
 let pool = null;
@@ -9,6 +14,7 @@ let isConnected = false;
  * Returns the singleton PostgreSQL pool instance.
  */
 function getPool() {
+  if (!Pool) return null;
   if (!pool) {
     const connectionString = process.env.DATABASE_URL;
     const config = connectionString
@@ -42,6 +48,11 @@ function getPool() {
 async function isDbAvailable() {
   try {
     const p = getPool();
+    if (!p) {
+      isConnected = false;
+      connectionTested = true;
+      return false;
+    }
     const client = await p.connect();
     client.release();
     isConnected = true;
