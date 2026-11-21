@@ -64,6 +64,18 @@ const swaggerSpec = {
         }
       }
     },
+    '/404': {
+      get: {
+        tags: ['Genel & Sağlık (General)'],
+        summary: 'Generic 404 Hata Sayfası',
+        description: 'Bulunamayan veya geçersiz sayfa isteklerinde yönlendirilen genel 404 hata sayfası.',
+        responses: {
+          404: {
+            description: '404 Sayfa Bulunamadı (HTML Görünümü)'
+          }
+        }
+      }
+    },
 
     // ==========================================
     // REST API ENDPOINTS: /api/users

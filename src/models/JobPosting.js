@@ -49,6 +49,7 @@ async function persistFile() {
       title: job.title,
       company: job.company,
       location: job.location,
+      city: job.city,
       workType: job.workType,
       employmentType: job.employmentType,
       experienceLevel: job.experienceLevel,
@@ -56,6 +57,7 @@ async function persistFile() {
       requirements: job.requirements,
       salaryRange: job.salaryRange,
       applicationUrl: job.applicationUrl,
+      contactEmail: job.contactEmail,
       isActive: job.isActive,
       deadline: job.deadline,
       createdAt: job.createdAt,
@@ -78,6 +80,7 @@ function mapRowToJobPosting(row) {
     title: row.title,
     company: row.company,
     location: row.location,
+    city: row.location,
     workType: row.work_type,
     employmentType: row.employment_type,
     experienceLevel: row.experience_level,
@@ -99,8 +102,12 @@ function mapRowToJobPosting(row) {
 }
 
 /**
- * JobPosting Model
+ * JobPosting Model (Domain Entity)
  * Represents career and internship opportunities with PostgreSQL & file storage support.
+ * Implements business invariants and validation rules defined in ddd.md:
+ * - title: required, max 120 characters
+ * - company: required
+ * - city: location identifier
  */
 class JobPosting {
   constructor({
@@ -109,13 +116,15 @@ class JobPosting {
     title,
     company,
     location,
+    city,
     workType = 'hybrid',
     employmentType = 'full-time',
     experienceLevel = 'mid',
-    description,
+    description = '',
     requirements = [],
     salaryRange = null,
     applicationUrl = null,
+    contactEmail = '',
     isActive = true,
     deadline = null,
     createdAt,
@@ -123,10 +132,12 @@ class JobPosting {
     user = null
   }) {
     this.id = id || crypto.randomUUID();
-    this.userId = userId;
-    this.title = title ? String(title).trim() : '';
-    this.company = company ? String(company).trim() : '';
-    this.location = location ? String(location).trim() : '';
+    this.userId = userId || null;
+    this.title = JobPosting.validateAndFormatTitle(title);
+    this.company = JobPosting.validateAndFormatCompany(company);
+    const resolvedLocation = (city || location || 'Remote').trim();
+    this.city = resolvedLocation;
+    this.location = resolvedLocation;
     this.workType = workType; // 'remote' | 'hybrid' | 'on-site'
     this.employmentType = employmentType; // 'full-time' | 'part-time' | 'internship' | 'contract'
     this.experienceLevel = experienceLevel; // 'intern' | 'entry' | 'mid' | 'senior' | 'lead'
@@ -134,6 +145,7 @@ class JobPosting {
     this.requirements = Array.isArray(requirements) ? requirements : [];
     this.salaryRange = salaryRange || null;
     this.applicationUrl = applicationUrl || null;
+    this.contactEmail = contactEmail ? String(contactEmail).trim() : '';
     this.isActive = typeof isActive === 'boolean' ? isActive : true;
     this.deadline = deadline || null;
     this.createdAt = createdAt || new Date().toISOString();
@@ -141,6 +153,34 @@ class JobPosting {
     if (user) {
       this.user = user;
     }
+  }
+
+  // ==========================================
+  // DOMAIN INVARIANT VALIDATORS (DDD Rules)
+  // ==========================================
+
+  /**
+   * Validates title invariant: required, max 120 characters
+   */
+  static validateAndFormatTitle(title) {
+    if (!title || typeof title !== 'string' || title.trim().length === 0) {
+      throw new Error('İş ilanı başlığı (title) zorunludur.');
+    }
+    const trimmed = title.trim();
+    if (trimmed.length > 120) {
+      throw new Error('İş ilanı başlığı (title) en fazla 120 karakter olabilir.');
+    }
+    return trimmed;
+  }
+
+  /**
+   * Validates company invariant: required
+   */
+  static validateAndFormatCompany(company) {
+    if (!company || typeof company !== 'string' || company.trim().length === 0) {
+      throw new Error('Şirket/kurum adı (company) zorunludur.');
+    }
+    return company.trim();
   }
 
   // ==========================================
@@ -177,7 +217,7 @@ class JobPosting {
   }
 
   // ==========================================
-  // CRUD OPERATIONS WITH DATABASE CONNECTION
+  // CRUD OPERATIONS WITH DATABASE & FALLBACK
   // ==========================================
 
   /**
@@ -187,46 +227,49 @@ class JobPosting {
     if (!data || typeof data !== 'object') {
       throw new Error('İş ilanı verisi gereklidir.');
     }
-    if (!data.title || !data.company || !data.description || !data.userId) {
-      throw new Error('Başlık, şirket, açıklama ve kullanıcı ID (userId) alanları zorunludur.');
-    }
+
+    // Domain Invariant validations
+    JobPosting.validateAndFormatTitle(data.title);
+    JobPosting.validateAndFormatCompany(data.company);
 
     const instance = new JobPosting(data);
 
-    const isConnected = await db.isDbAvailable();
-    if (isConnected) {
-      const sql = `
-        INSERT INTO job_postings (
-          id, user_id, title, company, location, work_type, employment_type,
-          experience_level, description, requirements, salary_range, application_url,
-          is_active, deadline, created_at, updated_at
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
-        RETURNING *;
-      `;
-      const values = [
-        instance.id,
-        instance.userId,
-        instance.title,
-        instance.company,
-        instance.location,
-        instance.workType,
-        instance.employmentType,
-        instance.experienceLevel,
-        instance.description,
-        instance.requirements,
-        instance.salaryRange,
-        instance.applicationUrl,
-        instance.isActive,
-        instance.deadline,
-        instance.createdAt,
-        instance.updatedAt
-      ];
+    if (db && typeof db.isDbAvailable === 'function') {
+      const isConnected = await db.isDbAvailable();
+      if (isConnected) {
+        const sql = `
+          INSERT INTO job_postings (
+            id, user_id, title, company, location, work_type, employment_type,
+            experience_level, description, requirements, salary_range, application_url,
+            is_active, deadline, created_at, updated_at
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+          RETURNING *;
+        `;
+        const values = [
+          instance.id,
+          instance.userId,
+          instance.title,
+          instance.company,
+          instance.location,
+          instance.workType,
+          instance.employmentType,
+          instance.experienceLevel,
+          instance.description,
+          instance.requirements,
+          instance.salaryRange,
+          instance.applicationUrl,
+          instance.isActive,
+          instance.deadline,
+          instance.createdAt,
+          instance.updatedAt
+        ];
 
-      const { rows } = await db.query(sql, values);
-      const created = mapRowToJobPosting(rows[0]);
-      jobPostingsStore.set(created.id, created);
-      await persistFile();
-      return created;
+        const { rows } = await db.query(sql, values);
+        const created = mapRowToJobPosting(rows[0]);
+        jobPostingsStore.set(created.id, created);
+        await persistFile();
+        return created;
+      }
     }
 
     // Fallback storage
@@ -239,56 +282,58 @@ class JobPosting {
    * READ ALL: Retrieves all job postings matching filter criteria.
    */
   static async findAll(filter = {}) {
-    const isConnected = await db.isDbAvailable();
-    if (isConnected) {
-      const conditions = [];
-      const values = [];
+    if (db && typeof db.isDbAvailable === 'function') {
+      const isConnected = await db.isDbAvailable();
+      if (isConnected) {
+        const conditions = [];
+        const values = [];
 
-      if (filter.userId) {
-        values.push(filter.userId);
-        conditions.push(`j.user_id = $${values.length}`);
-      }
-      if (filter.workType) {
-        values.push(filter.workType);
-        conditions.push(`j.work_type = $${values.length}`);
-      }
-      if (filter.employmentType) {
-        values.push(filter.employmentType);
-        conditions.push(`j.employment_type = $${values.length}`);
-      }
-      if (filter.experienceLevel) {
-        values.push(filter.experienceLevel);
-        conditions.push(`j.experience_level = $${values.length}`);
-      }
-      if (filter.company) {
-        values.push(`%${filter.company}%`);
-        conditions.push(`j.company ILIKE $${values.length}`);
-      }
-      if (filter.isActive !== undefined && filter.isActive !== '') {
-        values.push(filter.isActive === true || filter.isActive === 'true');
-        conditions.push(`j.is_active = $${values.length}`);
-      }
+        if (filter.userId) {
+          values.push(filter.userId);
+          conditions.push(`j.user_id = $${values.length}`);
+        }
+        if (filter.workType) {
+          values.push(filter.workType);
+          conditions.push(`j.work_type = $${values.length}`);
+        }
+        if (filter.employmentType) {
+          values.push(filter.employmentType);
+          conditions.push(`j.employment_type = $${values.length}`);
+        }
+        if (filter.experienceLevel) {
+          values.push(filter.experienceLevel);
+          conditions.push(`j.experience_level = $${values.length}`);
+        }
+        if (filter.company) {
+          values.push(`%${filter.company}%`);
+          conditions.push(`j.company ILIKE $${values.length}`);
+        }
+        if (filter.isActive !== undefined && filter.isActive !== '') {
+          values.push(filter.isActive === true || filter.isActive === 'true');
+          conditions.push(`j.is_active = $${values.length}`);
+        }
 
-      let sql = `
-        SELECT j.*,
-               json_build_object(
-                 'id', u.id,
-                 'name', u.name,
-                 'email', u.email,
-                 'company', u.company,
-                 'title', u.title
-               ) AS author
-        FROM job_postings j
-        LEFT JOIN users u ON j.user_id = u.id
-      `;
+        let sql = `
+          SELECT j.*,
+                 json_build_object(
+                   'id', u.id,
+                   'name', u.name,
+                   'email', u.email,
+                   'company', u.company,
+                   'title', u.title
+                 ) AS author
+          FROM job_postings j
+          LEFT JOIN users u ON j.user_id = u.id
+        `;
 
-      if (conditions.length > 0) {
-        sql += ' WHERE ' + conditions.join(' AND ');
+        if (conditions.length > 0) {
+          sql += ' WHERE ' + conditions.join(' AND ');
+        }
+        sql += ' ORDER BY j.created_at DESC';
+
+        const { rows } = await db.query(sql, values);
+        return rows.map(mapRowToJobPosting);
       }
-      sql += ' ORDER BY j.created_at DESC';
-
-      const { rows } = await db.query(sql, values);
-      return rows.map(mapRowToJobPosting);
     }
 
     // Fallback storage
@@ -329,25 +374,27 @@ class JobPosting {
   static async findById(id) {
     if (!id) return null;
 
-    const isConnected = await db.isDbAvailable();
-    if (isConnected) {
-      const sql = `
-        SELECT j.*,
-               json_build_object(
-                 'id', u.id,
-                 'name', u.name,
-                 'email', u.email,
-                 'company', u.company,
-                 'title', u.title
-               ) AS author
-        FROM job_postings j
-        LEFT JOIN users u ON j.user_id = u.id
-        WHERE j.id = $1
-        LIMIT 1;
-      `;
-      const { rows } = await db.query(sql, [id]);
-      if (rows.length === 0) return null;
-      return mapRowToJobPosting(rows[0]);
+    if (db && typeof db.isDbAvailable === 'function') {
+      const isConnected = await db.isDbAvailable();
+      if (isConnected) {
+        const sql = `
+          SELECT j.*,
+                 json_build_object(
+                   'id', u.id,
+                   'name', u.name,
+                   'email', u.email,
+                   'company', u.company,
+                   'title', u.title
+                 ) AS author
+          FROM job_postings j
+          LEFT JOIN users u ON j.user_id = u.id
+          WHERE j.id = $1
+          LIMIT 1;
+        `;
+        const { rows } = await db.query(sql, [id]);
+        if (rows.length === 0) return null;
+        return mapRowToJobPosting(rows[0]);
+      }
     }
 
     const job = jobPostingsStore.get(String(id)) || null;
@@ -377,54 +424,64 @@ class JobPosting {
       return this.findById(id);
     }
 
-    const isConnected = await db.isDbAvailable();
-    if (isConnected) {
-      const existing = await this.findById(id);
-      if (!existing) return null;
+    if (updateData.title !== undefined) {
+      updateData.title = JobPosting.validateAndFormatTitle(updateData.title);
+    }
+    if (updateData.company !== undefined) {
+      updateData.company = JobPosting.validateAndFormatCompany(updateData.company);
+    }
 
-      const updates = [];
-      const values = [];
+    if (db && typeof db.isDbAvailable === 'function') {
+      const isConnected = await db.isDbAvailable();
+      if (isConnected) {
+        const existing = await this.findById(id);
+        if (!existing) return null;
 
-      const fieldMappings = {
-        title: 'title',
-        company: 'company',
-        location: 'location',
-        workType: 'work_type',
-        employmentType: 'employment_type',
-        experienceLevel: 'experience_level',
-        description: 'description',
-        requirements: 'requirements',
-        salaryRange: 'salary_range',
-        applicationUrl: 'application_url',
-        isActive: 'is_active',
-        deadline: 'deadline'
-      };
+        const updates = [];
+        const values = [];
 
-      for (const [prop, column] of Object.entries(fieldMappings)) {
-        if (updateData[prop] !== undefined) {
-          const val = prop === 'isActive'
-            ? (updateData.isActive === true || updateData.isActive === 'true')
-            : updateData[prop];
-          values.push(val);
-          updates.push(`${column} = $${values.length}`);
+        const fieldMappings = {
+          title: 'title',
+          company: 'company',
+          location: 'location',
+          city: 'location',
+          workType: 'work_type',
+          employmentType: 'employment_type',
+          experienceLevel: 'experience_level',
+          description: 'description',
+          requirements: 'requirements',
+          salaryRange: 'salary_range',
+          applicationUrl: 'application_url',
+          isActive: 'is_active',
+          deadline: 'deadline'
+        };
+
+        for (const [prop, column] of Object.entries(fieldMappings)) {
+          if (updateData[prop] !== undefined) {
+            const val = prop === 'isActive'
+              ? (updateData.isActive === true || updateData.isActive === 'true')
+              : updateData[prop];
+            values.push(val);
+            updates.push(`${column} = $${values.length}`);
+          }
         }
+
+        updates.push(`updated_at = NOW()`);
+        values.push(id);
+
+        const sql = `
+          UPDATE job_postings
+          SET ${updates.join(', ')}
+          WHERE id = $${values.length}
+          RETURNING *;
+        `;
+
+        const { rows } = await db.query(sql, values);
+        const updated = mapRowToJobPosting(rows[0]);
+        jobPostingsStore.set(updated.id, updated);
+        await persistFile();
+        return updated;
       }
-
-      updates.push(`updated_at = NOW()`);
-      values.push(id);
-
-      const sql = `
-        UPDATE job_postings
-        SET ${updates.join(', ')}
-        WHERE id = $${values.length}
-        RETURNING *;
-      `;
-
-      const { rows } = await db.query(sql, values);
-      const updated = mapRowToJobPosting(rows[0]);
-      jobPostingsStore.set(updated.id, updated);
-      await persistFile();
-      return updated;
     }
 
     // Fallback storage
@@ -432,9 +489,9 @@ class JobPosting {
     if (!job) return null;
 
     const updatableFields = [
-      'title', 'company', 'location', 'workType', 'employmentType',
+      'title', 'company', 'location', 'city', 'workType', 'employmentType',
       'experienceLevel', 'description', 'requirements', 'salaryRange',
-      'applicationUrl', 'isActive', 'deadline'
+      'applicationUrl', 'contactEmail', 'isActive', 'deadline'
     ];
 
     for (const field of updatableFields) {
@@ -443,6 +500,9 @@ class JobPosting {
           job.requirements = updateData.requirements;
         } else if (field === 'isActive') {
           job.isActive = updateData.isActive === true || updateData.isActive === 'true';
+        } else if (field === 'city' || field === 'location') {
+          job.city = String(updateData[field]).trim();
+          job.location = String(updateData[field]).trim();
         } else {
           job[field] = updateData[field];
         }
@@ -461,14 +521,16 @@ class JobPosting {
   static async findByIdAndDelete(id) {
     if (!id) return null;
 
-    const isConnected = await db.isDbAvailable();
-    if (isConnected) {
-      const sql = 'DELETE FROM job_postings WHERE id = $1 RETURNING *;';
-      const { rows } = await db.query(sql, [id]);
-      if (rows.length === 0) return null;
-      jobPostingsStore.delete(id);
-      await persistFile();
-      return mapRowToJobPosting(rows[0]);
+    if (db && typeof db.isDbAvailable === 'function') {
+      const isConnected = await db.isDbAvailable();
+      if (isConnected) {
+        const sql = 'DELETE FROM job_postings WHERE id = $1 RETURNING *;';
+        const { rows } = await db.query(sql, [id]);
+        if (rows.length === 0) return null;
+        jobPostingsStore.delete(id);
+        await persistFile();
+        return mapRowToJobPosting(rows[0]);
+      }
     }
 
     const job = await this.findById(id);
@@ -483,16 +545,18 @@ class JobPosting {
    * UTILITY: Returns total number of job postings.
    */
   static async count(filter = {}) {
-    const isConnected = await db.isDbAvailable();
-    if (isConnected) {
-      let sql = 'SELECT COUNT(*)::int AS count FROM job_postings';
-      const values = [];
-      if (filter.userId) {
-        values.push(filter.userId);
-        sql += ' WHERE user_id = $1';
+    if (db && typeof db.isDbAvailable === 'function') {
+      const isConnected = await db.isDbAvailable();
+      if (isConnected) {
+        let sql = 'SELECT COUNT(*)::int AS count FROM job_postings';
+        const values = [];
+        if (filter.userId) {
+          values.push(filter.userId);
+          sql += ' WHERE user_id = $1';
+        }
+        const { rows } = await db.query(sql, values);
+        return rows[0].count;
       }
-      const { rows } = await db.query(sql, values);
-      return rows[0].count;
     }
     if (filter.userId) {
       return (await this.findByUserId(filter.userId)).length;
@@ -504,9 +568,11 @@ class JobPosting {
    * UTILITY: Clears all job postings.
    */
   static async clear() {
-    const isConnected = await db.isDbAvailable();
-    if (isConnected) {
-      await db.query('DELETE FROM job_postings;');
+    if (db && typeof db.isDbAvailable === 'function') {
+      const isConnected = await db.isDbAvailable();
+      if (isConnected) {
+        await db.query('DELETE FROM job_postings;');
+      }
     }
     jobPostingsStore.clear();
     await persistFile();

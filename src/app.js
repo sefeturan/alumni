@@ -3,8 +3,16 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
+// Middlewares
+const logger = require('./middlewares/logger');
+const guardian404 = require('./middlewares/guardian404');
+const guardian5xx = require('./middlewares/guardian5xx');
+
 const app = express();
 const PORT = process.env.PORT || 5001;
+
+// Global Logger Middleware (raw time, method, route, res type, duration)
+app.use(logger);
 
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
@@ -78,6 +86,17 @@ app.use('/api/job-postings', apiJobPostingRoutes);
 // Application RESTful API direct routes (JSON responses & API CRUD)
 const apiApplicationRoutes = require('./routes/apiApplication');
 app.use('/api/applications', apiApplicationRoutes);
+
+// Generic 404 page route
+app.get('/404', (req, res) => {
+  res.status(404).sendFile(path.join(__dirname, 'views', '404.html'));
+});
+
+// 404 Guardian Middleware (intercepts all unhandled endpoints with reason / redirects invalid web requests)
+app.use(guardian404);
+
+// 5xx Guardian Middleware (intercepts unhandled server errors, writes to logs/error.log)
+app.use(guardian5xx);
 
 if (require.main === module) {
   const server = app.listen(PORT, () => {

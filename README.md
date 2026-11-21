@@ -27,6 +27,9 @@ Backend RESTful API and communication service for the **Alumni Networking Platfo
 - [Available Scripts](#available-scripts)
 - [API Overview](#api-overview)
 - [📘 Swagger API Documentation](#-swagger-api-documentation)
+- [🛡 Middlewares & Guardian Architecture](#-middlewares--guardian-architecture)
+- [💼 Domain-Driven Design (DDD) & JobPosting](#-domain-driven-design-ddd--jobposting)
+- [📮 Postman & Invalid Request Testing](#-postman--invalid-request-testing)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -128,6 +131,11 @@ Below is the complete project directory layout including currently existing file
 
 ```text
 alumni-main/
+├── logs/                      # [Logs] Error and operational system logs
+│   └── error.log              # Error log file written by 5xx Guardian
+├── postman/                   # [API Client] Postman workspaces and collections
+│   ├── Alumni_Network_API.postman_collection.json # Valid & Invalid request test collection
+│   └── globals/
 ├── src/
 │   ├── app.js                 # [Entrypoint] Express setup, middlewares, port listener, route bindings
 │   ├── config/                # [Configuration] Database connections, environment & Swagger OpenAPI setup
@@ -137,9 +145,13 @@ alumni-main/
 │   │   ├── ApiAnnouncementController.js  # RESTful JSON API controller for announcement CRUD operations
 │   │   ├── ApiUserController.js          # RESTful JSON API controller for User CRUD operations
 │   │   └── UserController.js             # Traditional MVC web controller for User views & forms
-│   ├── middlewares/           # [Middlewares] Auth guards, schema validators, error handlers
+│   ├── middlewares/           # [Middlewares] Logging, 404 & 5xx Guardians
+│   │   ├── guardian404.js     # Intercepts unhandled routes (JSON with reason or redirects to /404)
+│   │   ├── guardian5xx.js     # Catches unhandled server exceptions, logs to logs/error.log
+│   │   └── logger.js          # Terminal request logger (raw time, method, route, res type, duration)
 │   ├── models/                # [Model Layer] In-memory data models providing full CRUD operations
 │   │   ├── Announcement.js    # In-memory Announcement model (news, notifications, events)
+│   │   ├── JobPosting.js      # JobPosting domain model (title <= 120 chars, company required, city)
 │   │   └── User.js            # In-memory User model providing full CRUD operations
 │   ├── routes/                # [Routing Layer] API & View endpoint definitions
 │   │   ├── about.js           # Route serving the About page view (/about)
@@ -151,6 +163,7 @@ alumni-main/
 │   ├── services/              # [Service Layer] Business logic & database operations
 │   ├── utils/                 # [Utilities] Helper functions, logging, and common tools
 │   └── views/                 # [View Layer] Front-end presentation templates and HTML files
+│       ├── 404.html           # Generic 404 Not Found error page
 │       ├── about.html         # About page UI template for Alumni Network Platform
 │       ├── announcement-detail.html # Dedicated announcement reading view (GET /announcements/:id)
 │       ├── announcement-edit.html   # Announcement edit form view (GET /announcements/:id/edit)
@@ -162,6 +175,7 @@ alumni-main/
 ├── .env                       # Local environment variables file (ignored by git)
 ├── .env.example               # Template environment variables for setup
 ├── .gitignore                 # Files and directories ignored by Git
+├── ddd.md                     # Domain-Driven Design (DDD) specifications & business rules
 ├── package.json               # Project manifest, npm dependencies, and npm scripts
 ├── package-lock.json          # Deterministic dependency tree lockfile
 └── README.md                  # Comprehensive project documentation
@@ -173,13 +187,19 @@ alumni-main/
 
 | Type | Path / Name | Layer | Description |
 | :--- | :--- | :--- | :--- |
-| **File** | [`src/app.js`](file:///Users/sefeturan/Downloads/alumni-main/src/app.js) | **Entrypoint** | Initializes Express, mounts middlewares, Swagger UI, core endpoints, User and Announcement routes. |
+| **File** | [`src/app.js`](file:///Users/sefeturan/Downloads/alumni-main/src/app.js) | **Entrypoint** | Initializes Express, mounts middlewares (Logger, 404 & 5xx Guardians), Swagger UI, core endpoints, User and Announcement routes. |
 | **Directory** | `src/config/` | **Config** | Manages environment-specific configurations and Swagger documentation setups. |
 | **File** | [`src/config/swagger.js`](file:///Users/sefeturan/Downloads/alumni-main/src/config/swagger.js) | **Config / Docs** | OpenAPI 3.0 specification defining schemas and endpoints for Users and Announcements. |
+| **Directory** | `src/middlewares/`| **Middleware**| Custom Express middlewares for request logging and error guardianship. |
+| **File** | [`src/middlewares/logger.js`](file:///Users/sefeturan/Downloads/alumni-main/src/middlewares/logger.js) | **Middleware** | Outputs `[raw time] [method] [route] [status] [res type] [duration]` to terminal. |
+| **File** | [`src/middlewares/guardian404.js`](file:///Users/sefeturan/Downloads/alumni-main/src/middlewares/guardian404.js) | **Middleware** | Intercepts unmatched routes: returns JSON with `reason` for APIs or redirects web requests to `/404`. |
+| **File** | [`src/middlewares/guardian5xx.js`](file:///Users/sefeturan/Downloads/alumni-main/src/middlewares/guardian5xx.js) | **Middleware** | Error handler logging stack traces to `logs/error.log` and returning safe 500 error responses. |
 | **Directory** | `src/models/` | **Model** | In-memory data models with asynchronous CRUD methods. |
 | **File** | [`src/models/Announcement.js`](file:///Users/sefeturan/Downloads/alumni-main/src/models/Announcement.js) | **Model** | In-memory Announcement model (`create`, `findAll`, `findById`, `findByIdAndUpdate`, `findByIdAndDelete`). |
+| **File** | [`src/models/JobPosting.js`](file:///Users/sefeturan/Downloads/alumni-main/src/models/JobPosting.js) | **Model** | JobPosting domain entity model enforcing DDD rules (title max 120 chars, company required, city). |
 | **File** | [`src/models/User.js`](file:///Users/sefeturan/Downloads/alumni-main/src/models/User.js) | **Model** | In-memory User data model with asynchronous CRUD methods. |
 | **Directory** | `src/views/` | **View** | Front-end templates and interfaces for user and announcement management. |
+| **File** | [`src/views/404.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/404.html) | **View** | Generic 404 error page with quick navigation back to home, users, and announcements. |
 | **File** | [`src/views/announcements.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/announcements.html) | **View** | Management interface for creating and listing announcements (`GET /announcements`). |
 | **File** | [`src/views/announcement-detail.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/announcement-detail.html) | **View** | Detailed announcement view (`GET /announcements/:id`). |
 | **File** | [`src/views/announcement-edit.html`](file:///Users/sefeturan/Downloads/alumni-main/src/views/announcement-edit.html) | **View** | Edit form for updating announcements (`GET /announcements/:id/edit`). |
@@ -199,10 +219,10 @@ alumni-main/
 | **File** | [`src/routes/about.js`](file:///Users/sefeturan/Downloads/alumni-main/src/routes/about.js) | **Routing / View** | Delivers the `about.html` view upon receiving `GET /about`. |
 | **File** | [`src/routes/sum.js`](file:///Users/sefeturan/Downloads/alumni-main/src/routes/sum.js) | **Routing / Logic**| Handles path parameters at `GET /sum/:number1/:number2` and returns the calculation result. |
 | **Directory** | `src/services/` | **Service** | Manages application business rules, external API integrations, and database operations. |
-| **Directory** | `src/middlewares/`| **Middleware**| Custom Express middlewares for JWT authentication, request validation, logging, and error handling. |
 | **Directory** | `src/utils/` | **Utility** | Shared helper functions (formatters, response helpers, math utilities). |
+| **File** | [`ddd.md`](file:///Users/sefeturan/Downloads/alumni-main/ddd.md) | **Architecture** | Domain-Driven Design definitions, Aggregates, and JobPosting business rules. |
 | **File** | [`.env.example`](file:///Users/sefeturan/Downloads/alumni-main/.env.example) | **Config** | Environment variable blueprint specifying `PORT`, `DATABASE_URL`, `JWT_SECRET`, etc. |
-| **File** | [`package.json`](file:///Users/sefeturan/Downloads/alumni-main/package.json) | **Config** | Node.js project configuration, npm run scripts (`start`, `dev`), and dependencies (`express`, `cors`, `dotenv`, `swagger-ui-express`). |
+| **File** | [`package.json`](file:///Users/sefeturan/Downloads/alumni-main/package.json) | **Config** | Node.js project configuration, npm run scripts (`start`, `dev`), and dependencies. |
 
 ---
 
@@ -401,6 +421,70 @@ Bundan sonra geliştirilen tüm endpoint'ler `src/config/swagger.js` dosyasında
   }
 }
 ```
+
+---
+
+## 🛡 Middlewares & Guardian Architecture
+
+Sistem, gelen isteklerin izlenmesi, güvenliği ve beklenmeyen durumların yönetimi için üç katmanlı middleware mimarisine sahiptir:
+
+### 1. ⏱ Logger Middleware (`src/middlewares/logger.js`)
+Her gelen HTTP isteğini ve yanıt metriklerini terminale anlık olarak formatlı şekilde yazar:
+- **Format:** `[raw time] [method] [route] [status] [res type] [duration]`
+- **Örnek Çıktı:**
+  ```text
+  [2026-11-21T17:15:30.123Z] GET /api/users 200 application/json; charset=utf-8 12.35ms
+  [2026-11-21T17:15:31.450Z] GET /api/unknown-endpoint 404 application/json; charset=utf-8 4.10ms
+  ```
+
+### 2. 🔍 404 Guardian Middleware (`src/middlewares/guardian404.js`)
+Tanımlanmamış veya eşleşmeyen tüm uç noktaları yakalayarak istemci türüne göre akıllı yanıt verir:
+- **REST API İstekleri (`/api/*` veya JSON bekleyen istemciler):** Hatanın nedenini açıklayan `reason` alanı ile 404 durum kodu döner:
+  ```json
+  {
+    "success": false,
+    "statusCode": 404,
+    "error": "Not Found",
+    "reason": "The requested endpoint 'GET /api/unknown' was not found on this server. Please verify the route path and HTTP method.",
+    "path": "/api/unknown",
+    "method": "GET",
+    "timestamp": "2026-11-21T17:15:30.123Z"
+  }
+  ```
+- **Web / Tarayıcı İstekleri:** Geçersiz web sayfaları otomatik olarak genel 404 sayfasına (`/404` -> `src/views/404.html`) yönlendirilir (`redirect`).
+
+### 3. 🚨 5xx Guardian Middleware (`src/middlewares/guardian5xx.js`)
+Uygulama genelinde fırlatılan yakalanmamış hataları ve 500 seviyesindeki istisnaları güvenle ele alır:
+- **Hata Günlüğü (`logs/error.log`):** Oluşan tüm hata detayları, zaman damgası, istek yolu ve yığın izi (stack trace) ile birlikte otomatik olarak `logs/error.log` dosyasına yazılır.
+- **Güvenli Yanıt:** Hassas sunucu detaylarını gizleyerek istemciye açıklayıcı ve güvenli bir JSON veya HTML hata yanıtı döner.
+
+---
+
+## 💼 Domain-Driven Design (DDD) & JobPosting
+
+Projenin alan modellemesi ve iş kuralları [`ddd.md`](ddd.md) dosyasında detaylandırılmıştır.
+
+### 📌 `JobPosting` (İş İlanı) Varlık Kuralları:
+- **`title` (Başlık):** Zorunlu alan (`required`), maksimum **120 karakter** (`max 120 characters`).
+- **`company` (Şirket/Kurum):** Zorunlu alan (`required`).
+- **`city` (Şehir):** İlanın çalışma lokasyonu.
+- **Model Dosyası:** [`src/models/JobPosting.js`](file:///Users/sefeturan/Downloads/alumni-main/src/models/JobPosting.js) iş kurallarını doğrular ve in-memory CRUD desteği sunar.
+
+---
+
+## 📮 Postman & Invalid Request Testing
+
+API uç noktalarını ve hata senaryolarını test etmek için `postman/` dizini altında hazır koleksiyon sunulmaktadır:
+
+- **Koleksiyon Dosyası:** [`postman/Alumni_Network_API.postman_collection.json`](postman/Alumni_Network_API.postman_collection.json)
+
+### 🧪 Test Edilen Geçersiz İstek Senaryoları:
+1. **400 Bad Request:** `POST /api/users` eksik alanlar (name veya email gönderilmediğinde).
+2. **404 Not Found:** `GET /api/users/:id` bulunmayan UUID ile sorgulama.
+3. **400 Bad Request:** `POST /api/announcements` eksik başlık veya içerik.
+4. **404 Not Found:** `GET /api/announcements/:id` bulunmayan duyuru ID'si.
+5. **404 Guardian Testi:** `GET /api/unknown-endpoint-test` tanımlanmamış API rotası sorgulama (`reason` açıklaması ile döner).
+6. **Web Yönlendirme Testi:** `GET /this-page-does-not-exist` web sayfasının `/404` generic sayfasına yönlendirilmesi.
 
 ---
 
