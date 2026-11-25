@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const db = require('../config/db');
+const { hashPassword, isPasswordHash } = require('../services/password');
 
 const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '../../data');
 const USERS_FILE = path.join(DATA_DIR, 'users.json');
@@ -189,7 +190,11 @@ class User {
       throw new Error(`A user with email "${normalizedEmail}" already exists.`);
     }
 
-    const userInstance = new User(userData);
+    const safeUserData = { ...userData };
+    if (safeUserData.password && !isPasswordHash(safeUserData.password)) {
+      safeUserData.password = await hashPassword(safeUserData.password);
+    }
+    const userInstance = new User(safeUserData);
 
     const isConnected = await db.isDbAvailable();
     if (isConnected) {
@@ -328,6 +333,10 @@ class User {
   static async findByIdAndUpdate(id, updateData) {
     if (!id || !updateData || typeof updateData !== 'object') {
       return this.findById(id);
+    }
+    updateData = { ...updateData };
+    if (updateData.password && !isPasswordHash(updateData.password)) {
+      updateData.password = await hashPassword(updateData.password);
     }
 
     const isConnected = await db.isDbAvailable();

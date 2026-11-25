@@ -51,7 +51,21 @@ Sistem üç ana alt alana (Subdomains / Bounded Contexts) ayrılmıştır:
 
 - **`name`**: Zorunlu (`required`), minimum 2 karakter.
 - **`email`**: Zorunlu (`required`), benzersiz (`unique`), geçerli RFC 5322 e-posta formatı.
-- **`role`**: `'student'`, `'alumni'`, `'admin'`.
+- **`role`**: `'student'`, `'alumni'`, `'admin'`. Public registration may create only `student` or `alumni`; administrator promotion is a trusted operator action.
+- **Authentication credential**: `password_hash` stores a salted scrypt hash, never a raw password. The model removes password values from JSON serialization.
+- **Authorization**: server middleware resolves the signed session to the current user and checks the current database role on each request. Admin-only actions are not granted by client-supplied role fields.
+
+### 3.1.1 Authentication & Authorization Context
+
+The Identity context owns registration, login, logout, signed HttpOnly cookies, password hashing, and role checks. Roles are:
+
+| Role | Capabilities |
+|---|---|
+| `student` | Personal account workspace and student-facing navigation |
+| `alumni` | Personal account workspace and alumni-facing navigation |
+| `admin` | Admin dashboard, role assignment, and protected user-management operations |
+
+A public registration request is always constrained to `student` or `alumni`. An existing account is promoted by an operator using `scripts/promote-admin.js`. The session token carries an expiry and user ID; authorization reads the current user record so role changes take effect without trusting stale client claims.
 - **`graduationYear`**: 1900 ile günümüz yılı + 10 arasında bir tam sayı.
 
 ---

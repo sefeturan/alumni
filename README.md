@@ -509,3 +509,49 @@ API uç noktalarını ve hata senaryolarını test etmek için `postman/` dizini
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
+
+
+---
+
+## 🔐 Authentication & Authorization
+
+Alumni Network includes session-style, signed authentication cookies and role-based access control (RBAC).
+
+### Account roles
+- **student** — student account and personal workspace.
+- **alumni** — graduate account and personal workspace.
+- **admin** — administrator tools, account-role management, and protected user CRUD.
+
+Public registration only accepts the `student` or `alumni` role. A client cannot register itself as an administrator. Passwords are stored as salted scrypt hashes; legacy plain-text seed passwords are upgraded to a hash after a successful login.
+
+### Web pages and endpoints
+
+| Method | Path | Purpose | Access |
+|---|---|---|---|
+| GET | `/register` | Registration form | Public |
+| POST | `/auth/register` | Create student/alumni account | Public |
+| GET | `/login` | Login form | Public |
+| POST | `/auth/login` | Start authenticated session | Public |
+| POST | `/auth/logout` | End session | Authenticated |
+| GET | `/auth/me` | Current account and role (JSON) | Public response; user is null when signed out |
+| GET | `/account` | Personal, role-specific workspace | Authenticated |
+| GET | `/admin` | Admin dashboard and role management | Admin |
+| POST | `/admin/users/:id/role` | Change a user's role | Admin |
+
+The signed cookie is HttpOnly, SameSite=Lax, and Secure in production. Set a strong `SESSION_SECRET` (or `JWT_SECRET`) before deployment. HTTPS is required in production.
+
+### Configure an administrator
+
+Set `ADMIN_EMAIL` to the email address of the account that should administer this installation, then promote that existing account:
+
+```bash
+node scripts/promote-admin.js admin@example.com
+```
+
+The script changes only the matching account's role; it does not create a default password or expose credentials. Run it after the account has registered. Do not use a shared/demo password in production.
+
+### Authorization notes
+- The legacy `/users` web CRUD area and write operations under `/api/users` require the admin role.
+- Role checks are enforced on the server; hiding menu items is only a user-interface convenience.
+- New accounts cannot submit the `admin` role during registration.
+- Configure a unique random session secret in every deployed environment and rotate it if compromised.

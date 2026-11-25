@@ -3,6 +3,7 @@ const router = express.Router();
 const ApiUserController = require('../controllers/ApiUserController');
 const apiUserJobPostingRoutes = require('./apiUserJobPosting');
 const apiUserApplicationRoutes = require('./apiUserApplication');
+const { requireRole } = require('../middlewares/auth');
 
 /**
  * RESTful API User Routes
@@ -27,18 +28,18 @@ router.use('/:userId/applications', apiUserApplicationRoutes);
 router.get('/', ApiUserController.getAllUsers);
 
 // POST /api/users - Create a new user
-router.post('/', ApiUserController.createUser);
+router.post('/', requireRole('admin'), ApiUserController.createUser);
 
 // GET /api/users/:id - Get a user by ID
 router.get('/:id', ApiUserController.getUserById);
 
 // PUT /api/users/:id - Update user details
-router.put('/:id', ApiUserController.updateUser);
+router.put('/:id', requireRole('admin'), ApiUserController.updateUser);
 
 // PATCH /api/users/:id - Partial update user details
-router.patch('/:id', ApiUserController.updateUser);
+router.patch('/:id', requireRole('admin'), ApiUserController.updateUser);
 
 // DELETE /api/users/:id - Delete a user
-router.delete('/:id', ApiUserController.deleteUser);
+router.delete('/:id', requireRole('admin'), ApiUserController.deleteUser);
 
 module.exports = router;

@@ -7,11 +7,14 @@ require('dotenv').config();
 const logger = require('./middlewares/logger');
 const guardian404 = require('./middlewares/guardian404');
 const guardian5xx = require('./middlewares/guardian5xx');
+const authNav = require('./middlewares/authNav');
+const { authenticate } = require('./middlewares/auth');
 
 const app = express();
 
 // Shared UI assets
 app.use('/styles', express.static(path.join(__dirname, 'styles')));
+app.use('/assets', express.static(path.join(__dirname, 'public')));
 const PORT = process.env.PORT || 5001;
 
 // Global Logger Middleware (raw time, method, route, res type, duration)
@@ -23,10 +26,18 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(authenticate);
+app.use(authNav);
 
 // Swagger Documentation Setup (/api-docs & /api/swagger)
 const { setupSwagger } = require('./config/swagger');
 setupSwagger(app);
+
+// Authentication, personal workspace, and role-aware admin tools
+const authRoutes = require('./routes/auth');
+app.use('/', authRoutes);
+const adminRoutes = require('./routes/admin');
+app.use('/admin', adminRoutes);
 
 // Root route: serves interactive landing page for Alumni Network
 app.get('/', (req, res) => {

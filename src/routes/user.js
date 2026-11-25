@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const UserController = require('../controllers/UserController');
+const { requireRole } = require('../middlewares/auth');
 
 /**
  * Web / MVC User Routes with View Layer
@@ -16,6 +17,9 @@ const UserController = require('../controllers/UserController');
  * - [D] POST /users/:id/delete -> Process deletion & redirect to list view
  * - [D] DELETE /users/:id      -> Process deletion (API / REST fallback)
  */
+
+// The legacy user CRUD interface is reserved for administrators.
+router.use(requireRole('admin'));
 
 // READ ALL: List all users
 router.get('/', UserController.index);
