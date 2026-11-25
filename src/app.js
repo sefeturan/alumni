@@ -3,15 +3,15 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-// Shared UI assets
-app.use('/styles', express.static(path.join(__dirname, 'styles')));
-
 // Middlewares
 const logger = require('./middlewares/logger');
 const guardian404 = require('./middlewares/guardian404');
 const guardian5xx = require('./middlewares/guardian5xx');
 
 const app = express();
+
+// Shared UI assets
+app.use('/styles', express.static(path.join(__dirname, 'styles')));
 const PORT = process.env.PORT || 5001;
 
 // Global Logger Middleware (raw time, method, route, res type, duration)
