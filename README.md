@@ -1,5 +1,13 @@
 # Alumni Network - Backend API
 
+## 🎨 Brand & Design System
+
+- [Brand Guide](brand.md) — brand personality, voice, and visual identity.
+- [Design System](DESIGN.md) — UI foundations, components, page templates, and responsive/accessibility rules.
+
+<a id="brand-guide"></a>
+<a id="design-system"></a>
+
 [![Node.js](https://img.shields.io/badge/Node.js-v18+-green.svg)](https://nodejs.org/)
 [![Docker](https://img.shields.io/badge/Docker-ready-blue.svg)](https://www.docker.com/)
 [![Swagger](https://img.shields.io/badge/Swagger-API%20Docs-85EA2D?logo=swagger&logoColor=black)](http://localhost:5000/api/swagger)
