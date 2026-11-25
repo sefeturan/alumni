@@ -3,7 +3,7 @@ const cors = require('cors');
 const path = require('path');
 require('dotenv').config();
 
-// Middlewares
+// Shared UI assets\napp.use('/styles', express.static(path.join(__dirname, 'styles')));\n\n// Middlewares
 const logger = require('./middlewares/logger');
 const guardian404 = require('./middlewares/guardian404');
 const guardian5xx = require('./middlewares/guardian5xx');
